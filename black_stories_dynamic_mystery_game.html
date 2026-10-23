@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Black Stories - Dynamic Mystery Game</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Tone.js for Audio Synthesis -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            title: ['"Bebas Neue"', 'sans-serif'],
+            body: ['"Space Grotesk"', 'sans-serif'],
+          },
+          colors: {
+            'neon-pink': '#ff0055',
+            'neon-cyan': '#00f0ff',
+            'neon-gold': '#facc15',
+            'neon-purple': '#a855f7',
+            'dark-bg': '#050508'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #050508;
+      color: white;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+    
+    .glass-panel {
+      background: rgba(10, 10, 18, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .slide-section {
+      min-height: 100vh;
+      width: 100vw;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      padding: 2rem 1rem;
+    }
+
+    @media (min-width: 768px) {
+      .slide-section { padding: 3rem; }
+    }
+
+    .bg-cover-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      opacity: 0.6;
+    }
+
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(5,5,8,0.7) 0%, rgba(5,5,8,0.95) 100%);
+      z-index: -1;
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(5px);
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal.active { display: flex; }
+
+    /* Hidden Premium Content */
+    .premium-locked {
+      display: none !important;
+    }
+    
+    /* Google Translate fix */
+    .goog-te-banner-frame { display: none !important; }
+    body { top: 0px !important; }
+  </style>
+</head>
+<body class="font-body text-gray-200 antialiased">
+
+  <!-- Google Translate Element -->
+  <div id="google_translate_element" class="hidden"></div>
+  <script type="text/javascript">
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({pageLanguage: 'es', includedLanguages: 'es,en', layout: google.translate.TranslateElement.InlineLayout.SIMPLE}, 'google_translate_element');
+    }
+  </script>
+  <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+  <!-- Global UI Overlay (Translate & Audio) -->
+  <div class="fixed top-4 right-4 z-40 flex gap-2">
+    <button onclick="toggleLanguage()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-cyan/50 hover:bg-neon-cyan hover:text-black transition-colors">
+      EN/ES
+    </button>
+    <button id="btnToggleAudio" onclick="initAudio()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-white/20 hover:bg-white/10 transition-colors">
+      <i class="fa-solid fa-volume-xmark mr-1"></i> AMBIENTE
+    </button>
+  </div>
+
+  <!-- Rain & FX Canvas Layers -->
+  <canvas id="rainCanvas" class="fixed inset-0 pointer-events-none z-20 opacity-80"></canvas>
+  
+  <svg id="crackSvg" class="fixed inset-0 w-full h-full pointer-events-none z-25 opacity-0 transition-opacity duration-1000" viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path id="crackPath1" d="M0 0 L15 20 L25 18 L35 32 L30 45 L50 60 L65 55 L80 80 L100 100" stroke="rgba(255,255,255,0.7)" stroke-width="0.3" fill="none" filter="drop-shadow(0 0 2px rgba(0,240,255,0.8))"/>
+    <path id="crackPath2" d="M100 0 L85 25 L70 20 L60 40 L40 38 L20 70 L0 100" stroke="rgba(255,255,255,0.6)" stroke-width="0.25" fill="none" filter="drop-shadow(0 0 2px rgba(0,240,255,0.8))"/>
+    <path id="crackPath3" d="M50 0 L52 15 L45 30 L58 45 L50 70 L55 100" stroke="rgba(255,255,255,0.5)" stroke-width="0.2" fill="none"/>
+  </svg>
+
+  <div id="eclipseLayer" class="fixed inset-0 pointer-events-none z-30 opacity-0 transition-opacity duration-[3000ms] flex items-center justify-center bg-black/90">
+    <div class="relative w-64 h-64 sm:w-96 sm:h-96 rounded-full bg-black shadow-[0_0_60px_20px_rgba(255,255,200,0.9),0_0_150px_50px_rgba(0,240,255,0.5)] border border-white/5"></div>
+  </div>
+
+  <!-- SLIDE 1: PORTADA -->
+  <section id="slide1" class="slide-section items-center justify-center text-center">
+    <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1280&auto=format&fit=crop" class="bg-cover-image" alt="Noir city">
+    <div class="bg-overlay"></div>
+    
+    <div class="relative z-10 glass-panel p-8 sm:p-12 rounded-3xl border-neon-pink shadow-[0_0_40px_rgba(255,0,85,0.2)] max-w-3xl w-full">
+      <span class="inline-block px-4 py-1 rounded-full bg-neon-pink/20 text-neon-pink text-sm font-bold tracking-widest border border-neon-pink/40 mb-6">
+        BIENVENIDOS <span class="text-white">DETECTIVES</span>
+      </span>
+      
+      <h1 class="font-title text-6xl sm:text-8xl tracking-wider text-white mb-4">
+        BLACK <span class="text-neon-pink">STORIES</span>
+      </h1>
+      
+      <p class="text-neon-cyan font-bold tracking-widest mb-6">MISTERIOS DE PENSAMIENTO LATERAL</p>
+      
+      <div class="flex flex-wrap justify-center gap-4 mb-8">
+        <button onclick="openModal('modalWhatIs')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
+          ¿QUÉ ES UNA BS?
+        </button>
+        <button onclick="openModal('modalRules')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
+          ¿CÓMO SE JUEGA?
+        </button>
+      </div>
+
+      <a href="#slide2" class="inline-block bg-neon-pink hover:bg-pink-600 text-white font-title text-2xl tracking-widest px-8 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,0,85,0.5)]">
+        ABRIR EXPEDIENTES <i class="fa-solid fa-arrow-right ml-2"></i>
+      </a>
+    </div>
+
+    <!-- Modals Portada -->
+    <div id="modalWhatIs" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan">
+        <button onclick="closeModal('modalWhatIs')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h2 class="font-title text-3xl text-neon-cyan mb-4">¿QUÉ ES UNA BLACK STORY?</h2>
+        <p class="text-sm text-gray-300 leading-relaxed">
+          Son acertijos siniestros, macabros y llenos de misterio. Se plantea una situación (el caso) que suele ser el final de una historia. Tu objetivo es reconstruir todo lo que pasó antes para llegar a ese desenlace utilizando únicamente tu ingenio y <strong>pensamiento lateral</strong> (pensar fuera de la caja).
+        </p>
+      </div>
+    </div>
+
+    <div id="modalRules" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-gold">
+        <button onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h2 class="font-title text-3xl text-neon-gold mb-4">REGLAS PARA JUGAR</h2>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">
+          Una persona lee el caso en voz alta y conoce la solución. El resto de los detectives deben formular preguntas para descifrar el misterio. 
+          <br><br>La persona que dirige el juego <strong>SOLO PUEDE RESPONDER</strong>:
+        </p>
+        <div class="flex gap-4 justify-center">
+          <div class="bg-green-500/20 border border-green-500 text-green-400 font-title text-3xl px-6 py-2 rounded-xl">SÍ</div>
+          <div class="bg-red-500/20 border border-red-500 text-red-400 font-title text-3xl px-6 py-2 rounded-xl">NO</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SLIDE 2: ÍNDICE -->
+  <section id="slide2" class="slide-section">
+    <img src="Gemini_Generated_Image_oz58ftoz58ftoz58.jpg" class="bg-cover-image" style="opacity: 0.35; filter: grayscale(70%) contrast(150%) brightness(70%);" alt="Batman Noir Gotham Background">
+    <div class="bg-overlay" style="background: linear-gradient(180deg, rgba(5,5,8,0.85) 0%, rgba(5,5,8,0.98) 100%);"></div>
+
+    <div class="max-w-7xl w-full mx-auto flex flex-col h-full relative z-10">
+      <div class="flex flex-wrap justify-between items-center border-b border-white/10 pb-4 mb-6 gap-4">
+        <h2 class="font-title text-4xl text-white tracking-widest">EXPEDIENTES <span class="text-neon-cyan">DISPONIBLES</span></h2>
+        <div class="flex gap-2">
+          <button onclick="openModal('modalUnlock')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-purple border-neon-purple hover:bg-neon-purple/20 transition-colors">
+            <i class="fa-solid fa-lock mr-2"></i> DESBLOQUEAR NIVEL 3
+          </button>
+          <button onclick="openModal('modalDonate')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-gold border-neon-gold hover:bg-neon-gold/20 transition-colors">
+            <i class="fa-solid fa-heart mr-2"></i> APOYAR CREADOR
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1 items-start">
+        
+        <!-- Nivel 1 -->
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center border-b-2 border-neon-pink pb-2 mb-2">
+            <span class="font-title text-xl text-neon-pink tracking-widest">NIVEL 1 - INICIACIÓN</span>
+          </div>
+          <a href="#slide3" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-pink">#01</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Ana y María</h3></div>
+          </a>
+          <a href="#slide5" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-pink">#02</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Brindis moral</h3></div>
+          </a>
+          <a href="#slide7" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-pink">#03</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">El paquete cerrado</h3></div>
+          </a>
+          <a href="#slide9" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-pink">#04</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">La última luz</h3></div>
+          </a>
+          <a href="#slide11" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-pink">#05</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Llamada sin palabras</h3></div>
+          </a>
+        </div>
+
+        <!-- Nivel 2 -->
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center border-b-2 border-neon-cyan pb-2 mb-2">
+            <span class="font-title text-xl text-neon-cyan tracking-widest">NIVEL 2 - AVANZADO</span>
+          </div>
+          <a href="#slide13" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-cyan">#06</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Habitación para la noche</h3></div>
+          </a>
+          <a href="#slide15" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-cyan">#07</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Zapatos del estreno</h3></div>
+          </a>
+          <a href="#slide17" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+            <span class="font-title text-2xl text-neon-cyan">#08</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">La pequeña diferencia</h3></div>
+          </a>
+        </div>
+
+        <!-- Nivel 3 & Extra (Titles Visible, Content Locked) -->
+        <div id="premiumSection" class="flex flex-col gap-3">
+          <div class="flex justify-between items-center border-b-2 border-neon-purple pb-2 mb-2">
+            <span class="font-title text-xl text-neon-purple tracking-widest">NIVEL 3 & EXTRA <i class="fa-solid fa-lock ml-1 text-xs"></i></span>
+          </div>
+          <a href="#slide19" onclick="if(document.getElementById('slide19') && document.getElementById('slide19').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+            <span class="font-title text-2xl text-neon-purple">#09</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Cena de sobrevivientes</h3></div>
+          </a>
+          <a href="#slide21" onclick="if(document.getElementById('slide21') && document.getElementById('slide21').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+            <span class="font-title text-2xl text-neon-purple">#10</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">El rescate pendiente</h3></div>
+          </a>
+          <a href="#slide23" onclick="if(document.getElementById('slide23') && document.getElementById('slide23').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+            <span class="font-title text-2xl text-neon-purple">#11</span>
+            <div class="flex-1"><h3 class="font-bold text-sm">Silencio antes del aplauso</h3></div>
+          </a>
+          <a href="#slide25" onclick="if(document.getElementById('slide25') && document.getElementById('slide25').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-gold/50">
+            <span class="font-title text-2xl text-neon-gold">#12</span>
+            <div class="flex-1"><h3 class="font-bold text-sm text-neon-gold">Carrera de bicicletas (EXTRA)</h3></div>
+          </a>
+        </div>
+      </div>
+      
+      <div class="w-full text-right mt-6">
+        <span class="text-neon-gold text-[10px] opacity-60 tracking-widest uppercase">Design Ronald Moreno</span>
+      </div>
+    </div>
+
+    <!-- Unlock Modal -->
+    <div id="modalUnlock" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-purple">
+        <button onclick="closeModal('modalUnlock')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <i class="fa-solid fa-lock text-4xl text-neon-purple mb-4"></i>
+        <h2 class="font-title text-3xl text-white mb-2">DESBLOQUEAR ACERTIJOS MÁXIMOS</h2>
+        <p class="text-sm text-gray-300 mb-6 leading-relaxed">
+          Un desafío extremo aguarda a los mejores detectives. Los casos del Nivel 3 y Extra pondrán al límite tu ingenio. <br><br>
+          <strong class="text-neon-gold">Para obtener tu clave secreta de acceso, debes realizar una donación (clic en "Apoyar Creador").</strong><br> 
+          ¿Aceptas el reto de descubrir la verdad?
+        </p>
+        <input type="password" id="unlockCode" placeholder="Ingresa el código..." class="w-full bg-black/50 border border-white/20 rounded-lg p-3 text-center text-white mb-4 focus:outline-none focus:border-neon-purple">
+        <button onclick="checkCode()" class="w-full bg-neon-purple hover:bg-purple-600 text-white font-bold py-3 rounded-lg transition-colors">DESBLOQUEAR</button>
+        <p id="unlockError" class="text-red-400 text-xs mt-2 hidden">Código incorrecto. Recuerda que lo recibes al apoyar al creador.</p>
+      </div>
+    </div>
+
+    <!-- Donate Modal -->
+    <div id="modalDonate" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-center relative border-neon-gold">
+        <button onclick="closeModal('modalDonate')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <i class="fa-solid fa-hand-holding-heart text-4xl text-neon-gold mb-4"></i>
+        <h2 class="font-title text-3xl text-white mb-2">APOYA EL PROYECTO</h2>
+        <p class="text-sm text-gray-300 mb-4 leading-relaxed">
+          ¿Te atreves a enfrentar el verdadero desafío? Realiza una donación a partir de <strong>6 USD</strong> o <strong>20.000 COP</strong> para apoyar al creador.<br><br>
+          <span class="text-neon-cyan font-bold">¡IMPORTANTE!</span> Incluye tu correo electrónico en la nota del pago. Recibirás un correo invitándote a resolver los acertijos de máximo nivel con la clave secreta.
+        </p>
+        
+        <div class="bg-black/40 p-4 rounded-xl mb-4 text-left border border-white/10">
+          <p class="text-sm"><strong class="text-neon-gold">Bre-B (Colombia):</strong> Ronaldf18@hotmail.com</p>
+        </div>
+
+        <a href="https://www.paypal.com/ncp/payment/XB94J78GB2YE8" target="_blank" class="inline-flex items-center justify-center w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-lg transition-colors mb-2">
+          <i class="fa-brands fa-paypal mr-2 text-xl"></i> Donar con PayPal
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Container for dynamically generated cases to keep file clean -->
+  <div id="casesContainer"></div>
+
+  <!-- Footer -->
+  <footer class="bg-black/80 py-4 text-center text-xs text-gray-500 border-t border-white/10 relative z-40">
+    Diseñado & Creado por <strong class="text-neon-cyan">Ronald Moreno</strong> — Protección de Propiedad Intelectual ©
+  </footer>
+
+  <script>
+    // --- Data for all 12 Cases ---
+    const casesData = [
+      { id: 1, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'ANA Y MARÍA', 
+        case: 'Pedro y Juan están jugando fútbol en la calle. Entre jugada y jugada empiezan a discutir y debatir acaloradamente. En medio de la discusión, Pedro le pega durísimo al balón y este sale volando hacia una casa cercana. Juan le dice a Pedro que vaya por él, pero Pedro reclama y pregunta por qué tiene que ir él. Al final, Pedro termina cediendo y va a buscar el balón. Ingresa a la casa, sube al segundo piso y al entrar a la habitación encuentra a Ana y María muertas.', 
+        question: '¿Qué ocurrió realmente? ¿Cómo murieron Ana y María?',
+        solTitle: 'ANA Y MARÍA ERAN PECES', 
+        solution: 'Ana y María no eran personas, sino dos peces de colores. Al salir volando por el pelotazo de Pedro, el balón rompió la ventana del segundo piso e impactó la pecera, tirándola al suelo y rompiéndola. Ana y María murieron por falta de agua.',
+        imgCase: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1280&auto=format&fit=crop', // niños jugando futbol
+        imgSol: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=1280&auto=format&fit=crop' // fishes
+      },
+      { id: 2, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'BRINDIS MORAL',
+        case: 'Dos amigas pidieron la misma bebida. Ambas tenían exactamente los mismos ingredientes. Una terminó su bebida muy rápido. La otra la tomó despacio y murió envenenada. La que sobrevivió sabía lo que iba a pasar.',
+        question: '¿Cómo pudo morir solo una si las dos bebidas eran iguales?',
+        solTitle: 'EL VENENO EN EL HIELO',
+        solution: 'El veneno estaba en los cubos de hielo de ambas bebidas. La primera bebió tan rápido que terminó antes de que se derritieran. Su amiga bebió despacio y consumió el veneno a medida que el hielo se derretía.',
+        imgCase: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1280&auto=format&fit=crop', // moody bar cocktails
+        imgSol: 'https://images.unsplash.com/photo-1491466424936-e304919aada7?q=80&w=1280&auto=format&fit=crop' // antarctica
+      },
+      { id: 3, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'EL PAQUETE CERRADO',
+        case: 'Un hombre apareció muerto en medio de un campo. Llevaba un paquete cerrado en la espalda. No había sido atacado por nadie. Si hubiera abierto el paquete a tiempo, habría sobrevivido.',
+        question: '¿Qué ocurrió?',
+        solTitle: 'PARACAÍDAS FALLIDO',
+        solution: 'El hombre había saltado de un avión. El paquete era su paracaídas, que no llegó a abrirse antes de que cayera al suelo.',
+        imgCase: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1280&auto=format&fit=crop', // empty field
+        imgSol: 'https://images.unsplash.com/photo-1521336575822-6da63fb45455?q=80&w=1280&auto=format&fit=crop' // parachute
+      },
+      { id: 4, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'LA ÚLTIMA LUZ',
+        case: 'Un hombre apagó una luz antes de irse a dormir. A la mañana siguiente descubrió que varias personas habían muerto por esa decisión. Ninguna estaba en su casa y él no las conocía.',
+        question: '¿Qué luz había apagado?',
+        solTitle: 'EL FARO DEL PUERTO',
+        solution: 'El hombre era el encargado de un faro. Al apagarlo, dejó sin señal de orientación a los barcos que navegaban cerca de la costa durante la noche. Se produjeron accidentes en los arrecifes.',
+        imgCase: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1280&auto=format&fit=crop', // dark sea
+        imgSol: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1280&auto=format&fit=crop' // lighthouse
+      },
+      { id: 5, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'LLAMADA SIN PALABRAS',
+        case: 'A las dos de la madrugada en un hotel, un hombre tomó el teléfono y llamó a la habitación de al lado, ocupada por un desconocido. El otro contestó: «¿Aló?». El hombre no dijo una palabra, colgó, se acomodó y consiguió dormirse. No era una broma.',
+        question: '¿Para qué hizo la llamada?',
+        solTitle: 'INTERRUMPIR LOS RONQUIDOS',
+        solution: 'El huésped de al lado roncaba tan fuerte que no lo dejaba dormir. Lo llamó para despertarlo. Al contestar, el vecino dejó de roncar y el hombre aprovechó ese silencio para quedarse dormido.',
+        imgCase: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1280&auto=format&fit=crop', // hotel phone
+        imgSol: 'https://images.unsplash.com/photo-1541971875076-8f970d573be6?q=80&w=1280&auto=format&fit=crop' // quiet room
+      },
+      { id: 6, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'HABITACIÓN PARA LA NOCHE',
+        case: 'Un hombre cuyo auto se averió consigue hospedarse en la única habitación disponible de un pequeño hotel de carretera. Entró, dejó sus cosas y abrió el clóset para guardar su chaqueta. Al ver lo que había dentro, retrocedió y susurró: «Estoy muerto».',
+        question: '¿Qué encontró y por qué sintió que su vida estaba en peligro?',
+        solTitle: 'EL SECRETO DEL CLÓSET',
+        solution: 'El viajero era un hombre negro. Dentro del clóset encontró una túnica y una capucha características del Ku Klux Klan, pertenecientes al dueño del hotel.',
+        imgCase: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop', // creepy motel
+        imgSol: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1280&auto=format&fit=crop' // dark closet
+      },
+      { id: 7, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'ZAPATOS DEL ESTRENO',
+        case: 'Poco antes de salir a escena, ella reemplazó sus zapatos habituales rotos por unos nuevos algo más altos. La función comenzó. Su marido hizo exactamente lo que habían ensayado. Ella murió delante del público. Él no quería matarla y los zapatos no la hicieron tropezar.',
+        question: '¿Qué ocurrió?',
+        solTitle: 'LANZAMIENTO MILIMÉTRICO',
+        solution: 'Eran artistas de circo. Él realizaba un número de lanzamiento de cuchillos con los ojos vendados. Los zapatos nuevos la elevaron unos centímetros: un cuchillo que antes pasaba sobre su cabeza la alcanzó.',
+        imgCase: 'https://images.unsplash.com/photo-1469488865564-c2de10f69f96?q=80&w=1280&auto=format&fit=crop', // stage spotlight
+        imgSol: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop' // target
+      },
+      { id: 8, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'LA PEQUEÑA DIFERENCIA',
+        case: 'Encontraron a un hombre muerto en el desierto en ropa interior y tenía un pequeño palillo de madera apretado en la mano. A kilómetros había una maleta y ropa. Ninguno de sus acompañantes lo empujó.',
+        question: '¿Por qué murió?',
+        solTitle: 'EL GLOBO AEROSTÁTICO',
+        solution: 'Viajaban en un globo aerostático que perdía altura. Arrojaron ropa para reducir peso. Como seguían descendiendo, sortearon quién debía saltar: cada uno tomó un palillo. El hombre sacó el más corto y saltó.',
+        imgCase: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop', // desert night
+        imgSol: 'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1280&auto=format&fit=crop' // balloon
+      },
+      { id: 9, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'CENA DE SOBREVIVIENTES', premium: true,
+        case: 'Un hombre pidió albatros auténtico en un restaurante. Probó un bocado, hizo preguntas al chef, y fue directo a la policía a pedir que reabrieran la investigación sobre la desaparición de su primera esposa hace años. La comida estaba en buen estado.',
+        question: '¿Qué relación había entre aquella cena y la desaparición?',
+        solTitle: 'EL SABOR DE LA VERDAD',
+        solution: 'Años atrás, naufragó con su esposa quedando ciego. Sus compañeros le dieron carne que identificaron como "albatros". Al probar el albatros real en el restaurante, comprendió que en la isla se había comido a su esposa.',
+        imgCase: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1280&auto=format&fit=crop', // restaurant
+        imgSol: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop' // shipwreck island
+      },
+      { id: 10, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'EL RESCATE PENDIENTE', premium: true,
+        case: 'Un preso logró salir del recinto sin ser descubierto. Permaneció inmóvil en completa oscuridad esperando su rescate. Horas después encendió un fósforo, vio un rostro junto al suyo y comprendió que nadie vendría a rescatarlo.',
+        question: '¿Dónde estaba y de quién era el rostro?',
+        solTitle: 'ENTERRADO VIVO',
+        solution: 'Había sobornado al sepulturero de la prisión para ocultarse en el ataúd junto a un cadáver. Al encender el fósforo descubrió que el rostro a su lado era el del mismísimo sepulturero muerto.',
+        imgCase: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1280&auto=format&fit=crop', // prison cell
+        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop' // dark graveyard
+      },
+      { id: 11, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'SILENCIO ANTES DEL APLAUSO', premium: true,
+        case: 'El artista principal comenzó su número acompañado por la orquesta. A mitad de la actuación ocurrió un apagón. El lugar quedó a oscuras y la música se detuvo. El artista dio un paso y murió. El silencio provocó el desenlace.',
+        question: '¿Por qué?',
+        solTitle: 'EL EQUILIBRISTA',
+        solution: 'Era un equilibrista que cruzaba la cuerda floja con los ojos vendados. La orquesta debía dejar de tocar cuando él alcanzara la plataforma. Creyó que el silencio indicaba que había llegado y dio el paso al vacío.',
+        imgCase: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop', // circus stage
+        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop' // tightrope void
+      },
+      { id: 12, level: 4, lvlText: 'NIVEL EXTRA', lvlColor: 'neon-gold', title: 'CARRERA DE BICICLETAS', premium: true,
+        case: 'Dos ciclistas competían, pero ambos avanzaban desesperantemente lento para NO cruzar primero. La organizadora se acercó, les susurró algo, y ambos montaron sus bicis pedaleando a toda velocidad para llegar primero. El premio era el mismo.',
+        question: '¿Qué les dijo?',
+        solTitle: 'INTERCAMBIO DE VEHÍCULO',
+        solution: 'El premio era para el dueño de la bicicleta que llegara en ÚLTIMO lugar. La organizadora les dijo: «Intercambien sus bicicletas». Al llevar la bici del rival a la meta rápido, la propia quedaba de última.',
+        imgCase: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=1280&auto=format&fit=crop', // bike road
+        imgSol: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=1280&auto=format&fit=crop' // race finish
+      }
+    ];
+
+    // --- Generate HTML for Cases ---
+    const container = document.getElementById('casesContainer');
+    let htmlContent = '';
+
+    casesData.forEach(c => {
+      let slideCaseId = c.id * 2 + 1;
+      let slideSolId = slideCaseId + 1;
+      let nextSlideId = (c.id === 12) ? 2 : slideSolId + 1;
+      let nextText = (c.id === 12) ? 'VOLVER AL ÍNDICE' : `SIGUIENTE (#${c.id+1 < 10 ? '0':''}${c.id+1})`;
+      let premiumClass = c.premium ? 'premium-locked premium-slide' : '';
+
+      htmlContent += `
+        <!-- CASO ${c.id} -->
+        <section id="slide${slideCaseId}" class="slide-section items-center justify-center ${premiumClass}">
+          <img src="${c.imgCase}" class="bg-cover-image" alt="Case background">
+          <div class="bg-overlay"></div>
+          <div class="max-w-4xl w-full z-10">
+            <div class="flex justify-between items-center mb-6">
+              <span class="bg-${c.lvlColor} text-white font-title text-xl px-4 py-1 rounded-md tracking-widest">${c.lvlText}</span>
+              <a href="#slide2" class="glass-panel px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-colors"><i class="fa-solid fa-list mr-2"></i> ÍNDICE</a>
+            </div>
+            <div class="glass-panel p-8 sm:p-12 rounded-3xl border-${c.lvlColor} text-left mb-6">
+              <h2 class="font-title text-5xl sm:text-6xl text-white mb-4 leading-none">EL CASO:<br><span class="text-${c.lvlColor}">${c.title}</span></h2>
+              <p class="text-lg text-gray-200 leading-relaxed mb-6">${c.case}</p>
+              <div class="bg-${c.lvlColor}/20 border-l-4 border-${c.lvlColor} p-4 rounded-r-lg">
+                <p class="font-bold text-white">${c.question}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <a href="#slide${slideSolId}" class="inline-block text-${c.lvlColor} font-bold hover:text-white transition-colors">VER SOLUCIÓN <i class="fa-solid fa-arrow-right ml-1"></i></a>
+            </div>
+          </div>
+        </section>
+
+        <!-- SOLUCION ${c.id} -->
+        <section id="slide${slideSolId}" class="slide-section items-center justify-center ${premiumClass}">
+          <img src="${c.imgSol}" class="bg-cover-image" alt="Solution background">
+          <div class="bg-overlay" style="background: linear-gradient(90deg, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.6) 100%);"></div>
+          <div class="max-w-4xl w-full z-10 flex flex-col md:flex-row gap-8 items-center">
+            <div class="flex-1 glass-panel p-8 sm:p-12 rounded-3xl border-neon-cyan text-left shadow-[0_0_40px_rgba(0,240,255,0.2)]">
+              <p class="text-neon-cyan font-title text-2xl tracking-widest mb-2">VERDAD REVELADA</p>
+              <h2 class="font-title text-5xl sm:text-6xl text-white mb-6 leading-none">${c.solTitle}</h2>
+              <p class="text-lg text-gray-200 leading-relaxed">${c.solution}</p>
+            </div>
+            <div class="w-full md:w-64 flex flex-col gap-4">
+              <a href="#slide2" class="glass-panel text-center px-4 py-4 rounded-xl text-sm font-bold hover:bg-white/10 transition-colors w-full"><i class="fa-solid fa-list mb-2 block text-2xl"></i> IR AL ÍNDICE</a>
+              <a href="#slide${nextSlideId}" class="bg-neon-cyan/20 border border-neon-cyan text-neon-cyan hover:bg-neon-cyan hover:text-black text-center px-4 py-4 rounded-xl text-sm font-bold transition-all w-full"><i class="fa-solid fa-forward mb-2 block text-2xl"></i> ${nextText}</a>
+            </div>
+          </div>
+        </section>
+      `;
+    });
+    container.innerHTML = htmlContent;
+
+    // --- Modals Logic ---
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    // --- Unlock Logic ---
+    function checkCode() {
+      const code = document.getElementById('unlockCode').value.trim().toLowerCase();
+      if(code === 'ronin18') {
+        document.querySelectorAll('.premium-slide').forEach(el => el.classList.remove('premium-locked'));
+        closeModal('modalUnlock');
+        alert("¡Código Aceptado! Has desbloqueado los misterios máximos.");
+      } else {
+        document.getElementById('unlockError').classList.remove('hidden');
+      }
+    }
+
+    // --- Translation Custom Button ---
+    function toggleLanguage() {
+      const teCombo = document.querySelector('.goog-te-combo');
+      if (teCombo) {
+        teCombo.value = teCombo.value === 'en' ? 'es' : 'en';
+        teCombo.dispatchEvent(new Event('change'));
+      }
+    }
+
+    // --- Dynamic Audio & Rain System ---
+    let audioStarted = false;
+    let rainLevel = 1;
+    let rainTimer = null;
+    let noiseSynth, filter;
+    
+    // Canvas setup
+    const canvas = document.getElementById('rainCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function initAudio() {
+      if(audioStarted) return;
+      
+      Tone.start().then(() => {
+        audioStarted = true;
+        document.getElementById('btnToggleAudio').innerHTML = '<i class="fa-solid fa-volume-high mr-1 text-neon-cyan"></i> Lloviendo (Lvl 1)';
+        
+        filter = new Tone.Filter(600, "lowpass").toDestination();
+        noiseSynth = new Tone.Noise("pink").connect(filter);
+        noiseSynth.volume.value = -30;
+        noiseSynth.start();
+
+        updateRainParticles();
+        drawRain();
+        
+        // Aumenta cada 3 minutos (180000 ms)
+        rainTimer = setInterval(increaseStorm, 180000);
+      });
+    }
+
+    function increaseStorm() {
+      if(rainLevel < 10) {
+        rainLevel++;
+        document.getElementById('btnToggleAudio').innerHTML = `<i class="fa-solid fa-volume-high mr-1 text-neon-cyan"></i> Lloviendo (Lvl ${rainLevel})`;
+        
+        // Audio changes
+        const targetVol = -30 + (rainLevel * 2.5); // Sube de -30 a -5
+        let targetFreq = 600 + (rainLevel * 300);
+        // Filtro más agudo a partir de lvl 5 para simular granizo contra vidrio
+        if(rainLevel >= 5) targetFreq += (rainLevel - 4) * 800;
+        
+        noiseSynth.volume.rampTo(targetVol, 2);
+        filter.frequency.rampTo(targetFreq, 2);
+        
+        updateRainParticles();
+      }
+    }
+
+    function updateRainParticles() {
+      const baseCount = 50 + (rainLevel * 40);
+      particles = [];
+      for(let i=0; i<baseCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          l: Math.random() * (15 + rainLevel * 3) + 10,
+          v: Math.random() * (10 + rainLevel * 2) + 10,
+          thickness: Math.min(1 + Math.floor(rainLevel/3), 4), // gotas más gruesas
+          isHail: rainLevel >= 5 && Math.random() < ((rainLevel - 4) * 0.15) // Granizo!
+        });
+      }
+
+      // Visual Cracks & Eclipse Updates
+      const crackSvg = document.getElementById('crackSvg');
+      const eclipse = document.getElementById('eclipseLayer');
+      
+      if(rainLevel >= 5 && rainLevel <= 9) {
+        crackSvg.style.opacity = Math.min((rainLevel - 4) * 0.25, 1.0).toString();
+      } else if (rainLevel === 10) {
+        crackSvg.style.opacity = '1';
+        eclipse.style.opacity = '1';
+        document.body.style.filter = 'contrast(1.15)';
+      }
+    }
+
+    function drawRain() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      particles.forEach(p => {
+        ctx.beginPath();
+        if(p.isHail) {
+          ctx.arc(p.x, p.y, p.thickness + 1, 0, Math.PI*2);
+          ctx.fillStyle = 'rgba(255,255,255,0.9)';
+          ctx.fill();
+        } else {
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.l * 0.2, p.y + p.l); // slight wind angle
+          ctx.strokeStyle = `rgba(200, 220, 255, ${0.1 + (rainLevel * 0.05)})`;
+          ctx.lineWidth = p.thickness;
+          ctx.stroke();
+        }
+        
+        p.y += p.v;
+        p.x += p.v * 0.2;
+        
+        if(p.y > canvas.height) {
+          p.y = -20;
+          p.x = Math.random() * canvas.width;
+        }
+      });
+      requestAnimationFrame(drawRain);
+    }
+  </script>
+</body>
+</html>
