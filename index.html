@@ -19,6 +19,51 @@
   <!-- Tone.js for Audio Synthesis -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
+  <!-- Firebase SDKs for Real-time Cloud Synchronization -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Global Firebase Config & Initialization
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      apiKey: "demo-key",
+      authDomain: "demo.firebaseapp.com",
+      projectId: "demo-project",
+      storageBucket: "demo.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:123456"
+    };
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'black-stories-game';
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Window global bindings for game scripts
+    window.db = db;
+    window.appId = appId;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.onSnapshot = onSnapshot;
+
+    // Authenticate user anonymously or with custom token
+    async function initAuth() {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+        window.firebaseUserReady = true;
+      } catch (e) {
+        console.warn("Firebase Auth fallback:", e);
+        window.firebaseUserReady = true;
+      }
+    }
+    initAuth();
+  </script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -103,6 +148,13 @@
       display: none !important;
     }
     
+    /* Detective Lock Mode: prevents detectives from clicking navigation links */
+    body.role-detective a:not([data-allow-detective]), 
+    body.role-detective button:not([data-allow-detective]) {
+      pointer-events: none !important;
+      opacity: 0.7;
+    }
+
     /* Google Translate fix */
     .goog-te-banner-frame { display: none !important; }
     body { top: 0px !important; }
@@ -119,15 +171,15 @@
   </script>
   <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-  <!-- Global UI Overlay (Translate & Audio) -->
+  <!-- Global UI Overlay (Translate & Audio & Role Controls) -->
   <div class="fixed top-4 right-4 z-40 flex gap-2">
-    <button id="btnRoleStatus" onclick="openModal('modalRoleSelector')" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-purple/70 text-neon-purple hover:bg-neon-purple hover:text-white transition-colors">
-      <i class="fa-solid fa-users mr-1"></i> MODO EN VIVO
+    <button id="btnRoleStatus" data-allow-detective="true" onclick="openModal('modalRoleSelector')" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-purple/70 text-neon-purple hover:bg-neon-purple hover:text-white transition-colors">
+      <i class="fa-solid fa-tower-broadcast mr-1"></i> MODO EN VIVO
     </button>
-    <button onclick="toggleLanguage()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-cyan/50 hover:bg-neon-cyan hover:text-black transition-colors">
+    <button data-allow-detective="true" onclick="toggleLanguage()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-cyan/50 hover:bg-neon-cyan hover:text-black transition-colors">
       EN/ES
     </button>
-    <button id="btnToggleAudio" onclick="initAudio()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-white/20 hover:bg-white/10 transition-colors">
+    <button id="btnToggleAudio" data-allow-detective="true" onclick="initAudio()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-white/20 hover:bg-white/10 transition-colors">
       <i class="fa-solid fa-volume-xmark mr-1"></i> AMBIENTE
     </button>
   </div>
@@ -148,18 +200,18 @@
   <!-- ROLE SELECTOR & MULTIPLAYER LOBBY MODAL -->
   <div id="modalRoleSelector" class="modal">
     <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-purple">
-      <button onclick="closeModal('modalRoleSelector')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <button data-allow-detective="true" onclick="closeModal('modalRoleSelector')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
       <i class="fa-solid fa-masks-theater text-4xl text-neon-purple mb-4"></i>
       <h2 class="font-title text-3xl text-white mb-2">SELECCIÓN DE ROL / SALA</h2>
       <p class="text-xs text-gray-300 mb-6">Elige cómo deseas jugar esta sesión de Black Stories.</p>
       
       <div class="grid grid-cols-2 gap-4 mb-6">
-        <button onclick="setupRole('sherlock')" class="glass-panel p-4 rounded-xl hover:border-neon-pink border-white/10 transition-all flex flex-col items-center gap-2">
+        <button data-allow-detective="true" onclick="setupRole('sherlock')" class="glass-panel p-4 rounded-xl hover:border-neon-pink border-white/10 transition-all flex flex-col items-center gap-2">
           <i class="fa-solid fa-user-secret text-2xl text-neon-pink"></i>
           <span class="font-title text-lg text-white">SHERLOCK</span>
           <span class="text-[10px] text-gray-400">Dirige el juego, ve soluciones y controla la sala.</span>
         </button>
-        <button onclick="setupRole('detective')" class="glass-panel p-4 rounded-xl hover:border-neon-cyan border-white/10 transition-all flex flex-col items-center gap-2">
+        <button data-allow-detective="true" onclick="setupRole('detective')" class="glass-panel p-4 rounded-xl hover:border-neon-cyan border-white/10 transition-all flex flex-col items-center gap-2">
           <i class="fa-solid fa-magnifying-glass text-2xl text-neon-cyan"></i>
           <span class="font-title text-lg text-white">DETECTIVE</span>
           <span class="text-[10px] text-gray-400">Resuelve el misterio en sincronía sin ver soluciones.</span>
@@ -171,9 +223,9 @@
         <p class="text-xs text-neon-pink font-bold mb-1">CÓDIGO DE TU SALA (SHERLOCK):</p>
         <div class="flex items-center justify-center gap-2 mb-3">
           <span id="sherlockRoomCode" class="font-title text-3xl tracking-widest text-white">SHER-0000</span>
-          <button onclick="copyRoomCode()" class="text-xs text-neon-cyan hover:underline"><i class="fa-solid fa-copy"></i></button>
+          <button data-allow-detective="true" onclick="copyRoomCode()" class="text-xs text-neon-cyan hover:underline"><i class="fa-solid fa-copy"></i></button>
         </div>
-        <button id="btnTogglePauseSession" onclick="toggleSessionPause()" class="w-full bg-neon-purple/20 border border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-white py-2 rounded-lg text-xs font-bold transition-all">
+        <button id="btnTogglePauseSession" data-allow-detective="true" onclick="toggleSessionPause()" class="w-full bg-neon-purple/20 border border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-white py-2 rounded-lg text-xs font-bold transition-all">
           <i class="fa-solid fa-pause mr-1"></i> PAUSAR SESIÓN (LOBBY DE ESPERA)
         </button>
       </div>
@@ -182,7 +234,7 @@
       <div id="detectiveRoomBox" class="hidden bg-black/40 p-4 rounded-xl mb-4 border border-neon-cyan/40">
         <p class="text-xs text-neon-cyan font-bold mb-2">UNIRSE A SALA EN VIVO:</p>
         <input type="text" id="inputJoinCode" placeholder="Ej: SHER-8492" class="w-full bg-black/60 border border-white/20 rounded-lg p-2 text-center text-white mb-3 focus:outline-none focus:border-neon-cyan text-sm uppercase">
-        <button onclick="joinRoom()" class="w-full bg-neon-cyan text-black hover:bg-cyan-400 font-bold py-2 rounded-lg transition-colors text-xs">
+        <button data-allow-detective="true" onclick="joinRoom()" class="w-full bg-neon-cyan text-black hover:bg-cyan-400 font-bold py-2 rounded-lg transition-colors text-xs">
           CONECTAR MODO ESPEJO
         </button>
       </div>
@@ -190,13 +242,13 @@
   </div>
 
   <!-- DETECTIVE WAITING LOBBY OVERLAY -->
-  <div id="detectiveLobbyOverlay" class="fixed inset-0 z-40 bg-black/95 backdrop-blur-md hidden flex-col items-center justify-center p-6 text-center">
+  <div id="detectiveLobbyOverlay" class="fixed inset-0 z-50 bg-black/95 backdrop-blur-md hidden flex-col items-center justify-center p-6 text-center">
     <div class="max-w-md glass-panel p-8 rounded-3xl border-neon-purple shadow-[0_0_50px_rgba(168,85,247,0.3)]">
       <i class="fa-solid fa-spinner fa-spin text-5xl text-neon-purple mb-4"></i>
       <h2 class="font-title text-4xl text-white mb-2">SHERLOCK ESTÁ PREPARANDO EL CASO</h2>
-      <p class="text-sm text-gray-300 mb-6">El anfitrión está revisando expedientes en privado. Aguarda un momento mientras se activa el siguiente misterio.</p>
+      <p class="text-sm text-gray-300 mb-6">El anfitrión está revisando expedientes en privado. Aguarda un momento mientras se activa el siguiente misterio en tiempo real.</p>
       <div class="inline-block px-4 py-2 rounded-full bg-neon-purple/20 text-neon-purple text-xs font-bold border border-neon-purple/40">
-        MODO ESPEJO ACTIVO
+        MODO ESPEJO ACTIVO EN VIVO
       </div>
     </div>
   </div>
@@ -218,13 +270,13 @@
       <p class="text-neon-cyan font-bold tracking-widest mb-6">MISTERIOS DE PENSAMIENTO LATERAL</p>
       
       <div class="flex flex-wrap justify-center gap-4 mb-8">
-        <button onclick="openModal('modalWhatIs')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
+        <button data-allow-detective="true" onclick="openModal('modalWhatIs')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
           ¿QUÉ ES UNA BS?
         </button>
-        <button onclick="openModal('modalRules')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
+        <button data-allow-detective="true" onclick="openModal('modalRules')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
           ¿CÓMO SE JUEGA?
         </button>
-        <button onclick="openModal('modalPurpose')" class="text-xs sm:text-sm font-bold bg-neon-cyan/20 hover:bg-neon-cyan hover:text-black text-neon-cyan px-4 py-2 rounded-full transition-colors border border-neon-cyan/40">
+        <button data-allow-detective="true" onclick="openModal('modalPurpose')" class="text-xs sm:text-sm font-bold bg-neon-cyan/20 hover:bg-neon-cyan hover:text-black text-neon-cyan px-4 py-2 rounded-full transition-colors border border-neon-cyan/40">
           <i class="fa-solid fa-lightbulb mr-1"></i> ¿PARA QUÉ SIRVE?
         </button>
       </div>
@@ -237,7 +289,7 @@
     <!-- Modals Portada -->
     <div id="modalWhatIs" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan max-h-[90vh] overflow-y-auto">
-        <button onclick="closeModal('modalWhatIs')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalWhatIs')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <h2 class="font-title text-3xl text-neon-cyan mb-4">¿QUÉ ES UNA BLACK STORY?</h2>
         <p class="text-sm text-gray-300 leading-relaxed">
           Son acertijos siniestros, macabros y llenos de misterio. Se plantea una situación (el caso) que suele ser el final de una historia. Tu objetivo es reconstruir todo lo que pasó antes para llegar a ese desenlace utilizando únicamente tu ingenio y <strong>pensamiento lateral</strong> (pensar fuera de la caja).
@@ -247,7 +299,7 @@
 
     <div id="modalPurpose" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan max-h-[90vh] overflow-y-auto">
-        <button onclick="closeModal('modalPurpose')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalPurpose')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <h2 class="font-title text-3xl text-neon-cyan mb-4 flex items-center gap-2">
           <i class="fa-solid fa-lightbulb"></i> ¿PARA QUÉ SIRVE ESTE JUEGO?
         </h2>
@@ -267,7 +319,7 @@
 
     <div id="modalRules" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-gold max-h-[90vh] overflow-y-auto">
-        <button onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <h2 class="font-title text-3xl text-neon-gold mb-3 flex items-center gap-2">
           <i class="fa-solid fa-book-skull"></i> ¿CÓMO SE JUEGA?
         </h2>
@@ -331,10 +383,10 @@
       <div class="flex flex-wrap justify-between items-center border-b border-white/10 pb-4 mb-6 gap-4">
         <h2 class="font-title text-4xl text-white tracking-widest">EXPEDIENTES <span class="text-neon-cyan">DISPONIBLES</span></h2>
         <div class="flex gap-2">
-          <button onclick="openModal('modalUnlock')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-purple border-neon-purple hover:bg-neon-purple/20 transition-colors">
+          <button data-allow-detective="true" onclick="openModal('modalUnlock')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-purple border-neon-purple hover:bg-neon-purple/20 transition-colors">
             <i class="fa-solid fa-lock mr-2"></i> DESBLOQUEAR NIVEL 3
           </button>
-          <button onclick="openModal('modalDonate')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-gold border-neon-gold hover:bg-neon-gold/20 transition-colors">
+          <button data-allow-detective="true" onclick="openModal('modalDonate')" class="glass-panel px-4 py-2 rounded-lg text-sm font-bold text-neon-gold border-neon-gold hover:bg-neon-gold/20 transition-colors">
             <i class="fa-solid fa-heart mr-2"></i> APOYAR CREADOR
           </button>
         </div>
@@ -457,13 +509,13 @@
     <!-- Streak Milestone Celebration Modal -->
     <div id="modalStreakCelebration" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-gold shadow-[0_0_50px_rgba(250,204,21,0.3)]">
-        <button onclick="closeModal('modalStreakCelebration')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalStreakCelebration')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-neon-gold/20 border-2 border-neon-gold flex items-center justify-center text-neon-gold text-3xl">
           <i class="fa-solid fa-fire-flame-curved"></i>
         </div>
         <h2 id="streakTitle" class="font-title text-3xl text-white mb-2">¡EN RACHA DETECTIVESCA!</h2>
         <p id="streakMessage" class="text-sm text-gray-300 mb-6 leading-relaxed"></p>
-        <button onclick="closeModal('modalStreakCelebration')" class="w-full bg-neon-gold text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">
+        <button data-allow-detective="true" onclick="closeModal('modalStreakCelebration')" class="w-full bg-neon-gold text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">
           ¡CONTINUAR INVESTIGANDO!
         </button>
       </div>
@@ -472,7 +524,7 @@
     <!-- Unlock Modal -->
     <div id="modalUnlock" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-purple">
-        <button onclick="closeModal('modalUnlock')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalUnlock')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <i class="fa-solid fa-lock text-4xl text-neon-purple mb-4"></i>
         <h2 class="font-title text-3xl text-white mb-2">DESBLOQUEAR ACERTIJOS MÁXIMOS</h2>
         <p class="text-sm text-gray-300 mb-6 leading-relaxed">
@@ -481,7 +533,7 @@
           ¿Aceptas el reto de descubrir la verdad?
         </p>
         <input type="password" id="unlockCode" placeholder="Ingresa el código..." class="w-full bg-black/50 border border-white/20 rounded-lg p-3 text-center text-white mb-4 focus:outline-none focus:border-neon-purple">
-        <button onclick="checkCode()" class="w-full bg-neon-purple hover:bg-purple-600 text-white font-bold py-3 rounded-lg transition-colors">DESBLOQUEAR</button>
+        <button data-allow-detective="true" onclick="checkCode()" class="w-full bg-neon-purple hover:bg-purple-600 text-white font-bold py-3 rounded-lg transition-colors">DESBLOQUEAR</button>
         <p id="unlockError" class="text-red-400 text-xs mt-2 hidden">Código incorrecto. Recuerda que lo recibes al apoyar al creador.</p>
       </div>
     </div>
@@ -489,7 +541,7 @@
     <!-- Donate Modal -->
     <div id="modalDonate" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-center relative border-neon-gold">
-        <button onclick="closeModal('modalDonate')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <button data-allow-detective="true" onclick="closeModal('modalDonate')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <i class="fa-solid fa-hand-holding-heart text-4xl text-neon-gold mb-4"></i>
         <h2 class="font-title text-3xl text-white mb-2">APOYA EL PROYECTO</h2>
         <p class="text-sm text-gray-300 mb-4 leading-relaxed">
@@ -501,7 +553,7 @@
           <p class="text-sm"><strong class="text-neon-gold">Bre-B (Colombia):</strong> Ronaldf18@hotmail.com</p>
         </div>
 
-        <a href="https://www.paypal.com/ncp/payment/XB94J78GB2YE8" target="_blank" class="inline-flex items-center justify-center w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-lg transition-colors mb-2">
+        <a href="https://www.paypal.com/ncp/payment/XB94J78GB2YE8" target="_blank" data-allow-detective="true" class="inline-flex items-center justify-center w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-lg transition-colors mb-2">
           <i class="fa-brands fa-paypal mr-2 text-xl"></i> Donar con PayPal
         </a>
       </div>
@@ -617,18 +669,13 @@
       }
     ];
 
-    // --- Dynamic State & Synchronization Variables ---
+    // --- Dynamic State Variables ---
     let currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
     let currentRoomCode = null;
     let isSessionPaused = false;
-    let syncChannel = null;
+    let firestoreUnsubscribe = null;
 
-    if (typeof BroadcastChannel !== 'undefined') {
-      syncChannel = new BroadcastChannel('black_stories_sync_channel');
-      syncChannel.onmessage = (e) => handleSyncMessage(e.data);
-    }
-
-    // Initialize LocalStorage solved state checks
+    // Helper to get local solved state
     function isCaseSolved(id) {
       return localStorage.getItem(`caso_${id}_resuelto`) === 'true';
     }
@@ -639,14 +686,12 @@
       updateSolvedBadges();
       
       const newSolvedCount = casesData.filter(c => isCaseSolved(c.id)).length;
-      
-      if (currentRole === 'sherlock') {
-        if (syncChannel) {
-          syncChannel.postMessage({ type: 'CASE_SOLVED', caseId: id, roomCode: currentRoomCode });
-        }
+
+      // Broadcast victory if Sherlock
+      if (currentRole === 'sherlock' && currentRoomCode) {
+        publishRoomStateToCloud();
       }
 
-      // Check milestones if score increased
       if (newSolvedCount > wereSolved) {
         checkStreakMilestone(newSolvedCount);
       }
@@ -683,32 +728,75 @@
         const isSolved = isCaseSolved(c.id);
 
         if (badgeEl) {
-          if (isSolved) {
-            badgeEl.classList.remove('hidden');
-          } else {
-            badgeEl.classList.add('hidden');
-          }
+          if (isSolved) badgeEl.classList.remove('hidden');
+          else badgeEl.classList.add('hidden');
         }
 
         if (indexCheckEl) {
-          if (isSolved) {
-            indexCheckEl.classList.remove('hidden');
-          } else {
-            indexCheckEl.classList.add('hidden');
-          }
+          if (isSolved) indexCheckEl.classList.remove('hidden');
+          else indexCheckEl.classList.add('hidden');
         }
       });
     }
 
-    // Broadcast Case Selection for Sherlock Live Mirror
+    // --- Firebase Cloud Sync Functions ---
+    async function publishRoomStateToCloud() {
+      if (currentRole !== 'sherlock' || !currentRoomCode) return;
+      if (!window.db || !window.doc || !window.setDoc) return;
+
+      const roomDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', currentRoomCode);
+      const activeHash = window.location.hash || '#slide1';
+
+      try {
+        await window.setDoc(roomDocRef, {
+          roomCode: currentRoomCode,
+          activeHash: activeHash,
+          isPaused: isSessionPaused,
+          lastUpdated: Date.now()
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Cloud publish error:", err);
+      }
+    }
+
+    function listenToRoomInCloud(code) {
+      if (firestoreUnsubscribe) {
+        firestoreUnsubscribe();
+        firestoreUnsubscribe = null;
+      }
+
+      if (!window.db || !window.doc || !window.onSnapshot) return;
+
+      const roomDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', code);
+      
+      firestoreUnsubscribe = window.onSnapshot(roomDocRef, (snapshot) => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.data();
+
+        if (currentRole === 'detective') {
+          const overlay = document.getElementById('detectiveLobbyOverlay');
+          if (data.isPaused) {
+            overlay.classList.remove('hidden');
+            overlay.classList.add('flex');
+          } else {
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+
+            if (data.activeHash && window.location.hash !== data.activeHash) {
+              window.location.hash = data.activeHash;
+            }
+          }
+        }
+      }, (error) => {
+        console.warn("Cloud subscription error:", error);
+      });
+    }
+
     function onCaseSelect(caseId) {
       if (currentRole === 'sherlock') {
-        localStorage.setItem('blackstories_caso_activo', caseId.toString());
-        localStorage.setItem('blackstories_estado_sala', 'active');
-        localStorage.setItem('blackstories_current_hash', `#slide${caseId * 2 + 1}`);
-        if (syncChannel) {
-          syncChannel.postMessage({ type: 'NAVIGATE', caseId: caseId, hash: `#slide${caseId * 2 + 1}`, roomCode: currentRoomCode });
-        }
+        const targetHash = `#slide${caseId * 2 + 1}`;
+        window.location.hash = targetHash;
+        publishRoomStateToCloud();
       }
     }
 
@@ -731,7 +819,7 @@
           <div class="max-w-4xl w-full z-10">
             <div class="flex justify-between items-center mb-6">
               <span class="bg-${c.lvlColor} text-white font-title text-xl px-4 py-1 rounded-md tracking-widest">${c.lvlText}</span>
-              <a href="#slide2" class="glass-panel px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-colors"><i class="fa-solid fa-list mr-2"></i> ÍNDICE</a>
+              <a href="#slide2" data-allow-detective="true" class="glass-panel px-4 py-2 rounded-full text-xs font-bold hover:bg-white/10 transition-colors"><i class="fa-solid fa-list mr-2"></i> ÍNDICE</a>
             </div>
             <div class="glass-panel p-8 sm:p-12 rounded-3xl border-${c.lvlColor} text-left mb-6">
               <h2 class="font-title text-5xl sm:text-6xl text-white mb-4 leading-none">EL CASO:<br><span class="text-${c.lvlColor}">${c.title}</span></h2>
@@ -796,7 +884,6 @@
     function startHoldToReveal(e, targetSlideId) {
       holdStartTime = Date.now();
       const circle = document.getElementById(`holdCircle_${targetSlideId}`);
-      
       if (holdInterval) clearInterval(holdInterval);
 
       holdInterval = setInterval(() => {
@@ -809,6 +896,7 @@
         if (elapsed >= 3000) {
           cancelHoldToReveal();
           window.location.hash = `#slide${targetSlideId}`;
+          if (currentRole === 'sherlock') publishRoomStateToCloud();
         }
       }, 50);
     }
@@ -840,8 +928,9 @@
         sherlockBox.classList.remove('hidden');
         detectiveBox.classList.add('hidden');
         document.body.classList.remove('role-detective');
-        localStorage.setItem('blackstories_estado_sala', 'active');
-        localStorage.setItem('blackstories_room_code', currentRoomCode);
+        
+        // Publish initially
+        publishRoomStateToCloud();
       } else if (role === 'detective') {
         sherlockBox.classList.add('hidden');
         detectiveBox.classList.remove('hidden');
@@ -853,9 +942,10 @@
       const codeInput = document.getElementById('inputJoinCode');
       const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
       if (!code) {
-        alert("Por favor ingresa un código de sala válido.");
+        alert("Por favor ingresa un código de sala válido (Ej: SHER-8492).");
         return;
       }
+      
       currentRoomCode = code;
       currentRole = 'detective';
       document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVE: ${currentRoomCode}`;
@@ -863,18 +953,13 @@
       closeModal('modalRoleSelector');
       updateRoleDOMVisibility();
 
-      // Immediately sync with current active slide if set
-      const currentHash = localStorage.getItem('blackstories_current_hash');
-      if (currentHash) {
-        window.location.hash = currentHash;
-      }
+      // Listen for Sherlock's updates on Firebase
+      listenToRoomInCloud(currentRoomCode);
     }
 
     function toggleSessionPause() {
       isSessionPaused = !isSessionPaused;
       const btn = document.getElementById('btnTogglePauseSession');
-      const newState = isSessionPaused ? 'lobby' : 'active';
-      localStorage.setItem('blackstories_estado_sala', newState);
 
       if (isSessionPaused) {
         btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> REANUDAR SESIÓN EN VIVO`;
@@ -884,9 +969,7 @@
         btn.classList.remove('bg-neon-pink', 'text-white');
       }
 
-      if (syncChannel) {
-        syncChannel.postMessage({ type: 'PAUSE_STATE', isPaused: isSessionPaused, roomCode: currentRoomCode });
-      }
+      publishRoomStateToCloud();
     }
 
     function updateRoleDOMVisibility() {
@@ -900,74 +983,9 @@
       });
     }
 
-    function handleSyncMessage(data) {
-      if (!data || (data.roomCode && data.roomCode !== currentRoomCode)) return;
-      
-      if (data.type === 'PAUSE_STATE' && currentRole === 'detective') {
-        const overlay = document.getElementById('detectiveLobbyOverlay');
-        if (data.isPaused) {
-          overlay.classList.remove('hidden');
-          overlay.classList.add('flex');
-        } else {
-          overlay.classList.add('hidden');
-          overlay.classList.remove('flex');
-        }
-      }
-
-      if (data.type === 'CASE_SOLVED') {
-        markCaseSolved(data.caseId);
-      }
-
-      if (data.type === 'NAVIGATE' && currentRole === 'detective') {
-        if (data.hash) {
-          window.location.hash = data.hash;
-        } else if (data.caseId) {
-          const targetSlideId = data.caseId * 2 + 1;
-          window.location.hash = `#slide${targetSlideId}`;
-        }
-      }
-    }
-
-    // Lightweight 1s Polling Interval for Detective LocalStorage Synchronization
-    setInterval(() => {
-      if (currentRole === 'detective') {
-        const roomState = localStorage.getItem('blackstories_estado_sala');
-        const activeHash = localStorage.getItem('blackstories_current_hash');
-        const overlay = document.getElementById('detectiveLobbyOverlay');
-
-        if (roomState === 'lobby') {
-          overlay.classList.remove('hidden');
-          overlay.classList.add('flex');
-        } else {
-          overlay.classList.add('hidden');
-          overlay.classList.remove('flex');
-
-          if (activeHash && window.location.hash !== activeHash) {
-            window.location.hash = activeHash;
-          }
-        }
-      }
-      updateSolvedBadges();
-    }, 1000);
-
-    function copyRoomCode() {
-      if (currentRoomCode) {
-        var dummy = document.createElement('input');
-        document.body.appendChild(dummy);
-        dummy.value = currentRoomCode;
-        dummy.select();
-        document.execCommand('copy');
-        document.body.removeChild(dummy);
-        alert(`Código de sala ${currentRoomCode} copiado al portapapeles.`);
-      }
-    }
-
     window.addEventListener('hashchange', () => {
       if (currentRole === 'sherlock') {
-        localStorage.setItem('blackstories_current_hash', window.location.hash);
-        if (syncChannel) {
-          syncChannel.postMessage({ type: 'NAVIGATE', hash: window.location.hash, roomCode: currentRoomCode });
-        }
+        publishRoomStateToCloud();
       }
     });
 
@@ -1035,7 +1053,6 @@
         updateRainParticles();
         drawRain();
         
-        // Increases every 3 minutes (180000 ms)
         rainTimer = setInterval(increaseStorm, 180000);
       });
     }
