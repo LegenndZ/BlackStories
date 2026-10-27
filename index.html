@@ -705,8 +705,9 @@
       if (currentRole === 'sherlock') {
         localStorage.setItem('blackstories_caso_activo', caseId.toString());
         localStorage.setItem('blackstories_estado_sala', 'active');
+        localStorage.setItem('blackstories_current_hash', `#slide${caseId * 2 + 1}`);
         if (syncChannel) {
-          syncChannel.postMessage({ type: 'NAVIGATE', caseId: caseId, roomCode: currentRoomCode });
+          syncChannel.postMessage({ type: 'NAVIGATE', caseId: caseId, hash: `#slide${caseId * 2 + 1}`, roomCode: currentRoomCode });
         }
       }
     }
@@ -840,6 +841,7 @@
         detectiveBox.classList.add('hidden');
         document.body.classList.remove('role-detective');
         localStorage.setItem('blackstories_estado_sala', 'active');
+        localStorage.setItem('blackstories_room_code', currentRoomCode);
       } else if (role === 'detective') {
         sherlockBox.classList.add('hidden');
         detectiveBox.classList.remove('hidden');
@@ -860,6 +862,12 @@
       document.body.classList.add('role-detective');
       closeModal('modalRoleSelector');
       updateRoleDOMVisibility();
+
+      // Immediately sync with current active slide if set
+      const currentHash = localStorage.getItem('blackstories_current_hash');
+      if (currentHash) {
+        window.location.hash = currentHash;
+      }
     }
 
     function toggleSessionPause() {
@@ -911,8 +919,12 @@
       }
 
       if (data.type === 'NAVIGATE' && currentRole === 'detective') {
-        const targetSlideId = data.caseId * 2 + 1;
-        window.location.hash = `#slide${targetSlideId}`;
+        if (data.hash) {
+          window.location.hash = data.hash;
+        } else if (data.caseId) {
+          const targetSlideId = data.caseId * 2 + 1;
+          window.location.hash = `#slide${targetSlideId}`;
+        }
       }
     }
 
@@ -920,7 +932,7 @@
     setInterval(() => {
       if (currentRole === 'detective') {
         const roomState = localStorage.getItem('blackstories_estado_sala');
-        const activeCaseId = localStorage.getItem('blackstories_caso_activo');
+        const activeHash = localStorage.getItem('blackstories_current_hash');
         const overlay = document.getElementById('detectiveLobbyOverlay');
 
         if (roomState === 'lobby') {
@@ -930,12 +942,8 @@
           overlay.classList.add('hidden');
           overlay.classList.remove('flex');
 
-          if (activeCaseId) {
-            const slideCaseId = parseInt(activeCaseId) * 2 + 1;
-            const targetHash = `#slide${slideCaseId}`;
-            if (window.location.hash !== targetHash) {
-              window.location.hash = targetHash;
-            }
+          if (activeHash && window.location.hash !== activeHash) {
+            window.location.hash = activeHash;
           }
         }
       }
@@ -955,8 +963,11 @@
     }
 
     window.addEventListener('hashchange', () => {
-      if (currentRole === 'sherlock' && syncChannel) {
-        syncChannel.postMessage({ type: 'NAVIGATE', hash: window.location.hash, roomCode: currentRoomCode });
+      if (currentRole === 'sherlock') {
+        localStorage.setItem('blackstories_current_hash', window.location.hash);
+        if (syncChannel) {
+          syncChannel.postMessage({ type: 'NAVIGATE', hash: window.location.hash, roomCode: currentRoomCode });
+        }
       }
     });
 
