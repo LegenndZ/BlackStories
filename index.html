@@ -121,6 +121,9 @@
 
   <!-- Global UI Overlay (Translate & Audio) -->
   <div class="fixed top-4 right-4 z-40 flex gap-2">
+    <button id="btnRoleStatus" onclick="openModal('modalRoleSelector')" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-purple/70 text-neon-purple hover:bg-neon-purple hover:text-white transition-colors">
+      <i class="fa-solid fa-users mr-1"></i> MODO EN VIVO
+    </button>
     <button onclick="toggleLanguage()" class="glass-panel px-3 py-1 rounded-full text-xs font-bold border-neon-cyan/50 hover:bg-neon-cyan hover:text-black transition-colors">
       EN/ES
     </button>
@@ -140,6 +143,62 @@
 
   <div id="eclipseLayer" class="fixed inset-0 pointer-events-none z-30 opacity-0 transition-opacity duration-[3000ms] flex items-center justify-center bg-black/90">
     <div class="relative w-64 h-64 sm:w-96 sm:h-96 rounded-full bg-black shadow-[0_0_60px_20px_rgba(255,255,200,0.9),0_0_150px_50px_rgba(0,240,255,0.5)] border border-white/5"></div>
+  </div>
+
+  <!-- ROLE SELECTOR & MULTIPLAYER LOBBY MODAL -->
+  <div id="modalRoleSelector" class="modal">
+    <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-purple">
+      <button onclick="closeModal('modalRoleSelector')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+      <i class="fa-solid fa-masks-theater text-4xl text-neon-purple mb-4"></i>
+      <h2 class="font-title text-3xl text-white mb-2">SELECCIÓN DE ROL / SALA</h2>
+      <p class="text-xs text-gray-300 mb-6">Elige cómo deseas jugar esta sesión de Black Stories.</p>
+      
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <button onclick="setupRole('sherlock')" class="glass-panel p-4 rounded-xl hover:border-neon-pink border-white/10 transition-all flex flex-col items-center gap-2">
+          <i class="fa-solid fa-user-secret text-2xl text-neon-pink"></i>
+          <span class="font-title text-lg text-white">SHERLOCK</span>
+          <span class="text-[10px] text-gray-400">Dirige el juego, ve soluciones y controla la sala.</span>
+        </button>
+        <button onclick="setupRole('detective')" class="glass-panel p-4 rounded-xl hover:border-neon-cyan border-white/10 transition-all flex flex-col items-center gap-2">
+          <i class="fa-solid fa-magnifying-glass text-2xl text-neon-cyan"></i>
+          <span class="font-title text-lg text-white">DETECTIVE</span>
+          <span class="text-[10px] text-gray-400">Resuelve el misterio en sincronía sin ver soluciones.</span>
+        </button>
+      </div>
+
+      <!-- Sherlock Panel -->
+      <div id="sherlockRoomBox" class="hidden bg-black/40 p-4 rounded-xl mb-4 border border-neon-pink/40">
+        <p class="text-xs text-neon-pink font-bold mb-1">CÓDIGO DE TU SALA (SHERLOCK):</p>
+        <div class="flex items-center justify-center gap-2 mb-3">
+          <span id="sherlockRoomCode" class="font-title text-3xl tracking-widest text-white">SHER-0000</span>
+          <button onclick="copyRoomCode()" class="text-xs text-neon-cyan hover:underline"><i class="fa-solid fa-copy"></i></button>
+        </div>
+        <button id="btnTogglePauseSession" onclick="toggleSessionPause()" class="w-full bg-neon-purple/20 border border-neon-purple text-neon-purple hover:bg-neon-purple hover:text-white py-2 rounded-lg text-xs font-bold transition-all">
+          <i class="fa-solid fa-pause mr-1"></i> PAUSAR SESIÓN (LOBBY DE ESPERA)
+        </button>
+      </div>
+
+      <!-- Detective Join Box -->
+      <div id="detectiveRoomBox" class="hidden bg-black/40 p-4 rounded-xl mb-4 border border-neon-cyan/40">
+        <p class="text-xs text-neon-cyan font-bold mb-2">UNIRSE A SALA EN VIVO:</p>
+        <input type="text" id="inputJoinCode" placeholder="Ej: SHER-8492" class="w-full bg-black/60 border border-white/20 rounded-lg p-2 text-center text-white mb-3 focus:outline-none focus:border-neon-cyan text-sm uppercase">
+        <button onclick="joinRoom()" class="w-full bg-neon-cyan text-black hover:bg-cyan-400 font-bold py-2 rounded-lg transition-colors text-xs">
+          CONECTAR MODO ESPEJO
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETECTIVE WAITING LOBBY OVERLAY -->
+  <div id="detectiveLobbyOverlay" class="fixed inset-0 z-40 bg-black/95 backdrop-blur-md hidden flex-col items-center justify-center p-6 text-center">
+    <div class="max-w-md glass-panel p-8 rounded-3xl border-neon-purple shadow-[0_0_50px_rgba(168,85,247,0.3)]">
+      <i class="fa-solid fa-spinner fa-spin text-5xl text-neon-purple mb-4"></i>
+      <h2 class="font-title text-4xl text-white mb-2">SHERLOCK ESTÁ PREPARANDO EL CASO</h2>
+      <p class="text-sm text-gray-300 mb-6">El anfitrión está revisando expedientes en privado. Aguarda un momento mientras se activa el siguiente misterio.</p>
+      <div class="inline-block px-4 py-2 rounded-full bg-neon-purple/20 text-neon-purple text-xs font-bold border border-neon-purple/40">
+        MODO ESPEJO ACTIVO
+      </div>
+    </div>
   </div>
 
   <!-- SLIDE 1: PORTADA -->
@@ -165,6 +224,9 @@
         <button onclick="openModal('modalRules')" class="text-xs sm:text-sm font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20">
           ¿CÓMO SE JUEGA?
         </button>
+        <button onclick="openModal('modalPurpose')" class="text-xs sm:text-sm font-bold bg-neon-cyan/20 hover:bg-neon-cyan hover:text-black text-neon-cyan px-4 py-2 rounded-full transition-colors border border-neon-cyan/40">
+          <i class="fa-solid fa-lightbulb mr-1"></i> ¿PARA QUÉ SIRVE?
+        </button>
       </div>
 
       <a href="#slide2" class="inline-block bg-neon-pink hover:bg-pink-600 text-white font-title text-2xl tracking-widest px-8 py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(255,0,85,0.5)]">
@@ -174,7 +236,7 @@
 
     <!-- Modals Portada -->
     <div id="modalWhatIs" class="modal">
-      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan max-h-[90vh] overflow-y-auto">
         <button onclick="closeModal('modalWhatIs')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <h2 class="font-title text-3xl text-neon-cyan mb-4">¿QUÉ ES UNA BLACK STORY?</h2>
         <p class="text-sm text-gray-300 leading-relaxed">
@@ -183,17 +245,78 @@
       </div>
     </div>
 
-    <div id="modalRules" class="modal">
-      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-gold">
-        <button onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h2 class="font-title text-3xl text-neon-gold mb-4">REGLAS PARA JUGAR</h2>
+    <div id="modalPurpose" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('modalPurpose')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h2 class="font-title text-3xl text-neon-cyan mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-lightbulb"></i> ¿PARA QUÉ SIRVE ESTE JUEGO?
+        </h2>
         <p class="text-sm text-gray-300 leading-relaxed mb-4">
-          Una persona lee el caso en voz alta y conoce la solución. El resto de los detectives deben formular preguntas para descifrar el misterio. 
-          <br><br>La persona que dirige el juego <strong>SOLO PUEDE RESPONDER</strong>:
+          Pensé en este juego para quienes buscan una actividad diferente: ideal para <strong>abrir un taller de forma creativa</strong>, <strong>romper el hielo</strong> con un equipo de trabajo o <strong>llevar un reto estimulante al aula de clase</strong>.
         </p>
-        <div class="flex gap-4 justify-center">
-          <div class="bg-green-500/20 border border-green-500 text-green-400 font-title text-3xl px-6 py-2 rounded-xl">SÍ</div>
-          <div class="bg-red-500/20 border border-red-500 text-red-400 font-title text-3xl px-6 py-2 rounded-xl">NO</div>
+        <p class="text-sm text-gray-300 leading-relaxed mb-4">
+          También es perfecto para jugar entre amigos o en familia durante una reunión o un viaje. Es una herramienta diseñada para desatar la creatividad de todos los participantes y se adapta desde <strong>2 hasta 80 personas</strong> al mismo tiempo.
+        </p>
+        <div class="bg-black/50 p-4 rounded-xl border border-neon-cyan/30 text-center">
+          <span class="text-xs text-neon-cyan font-bold tracking-widest uppercase">
+            <i class="fa-solid fa-users mr-1"></i> IDEAL PARA DIVERSAS DINÁMICAS Y GRUPOS
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div id="modalRules" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-gold max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h2 class="font-title text-3xl text-neon-gold mb-3 flex items-center gap-2">
+          <i class="fa-solid fa-book-skull"></i> ¿CÓMO SE JUEGA?
+        </h2>
+        
+        <p class="text-xs text-gray-300 leading-relaxed mb-4">
+          Un juego de misterio, lógica y pensamiento lateral. Se dividen los jugadores en dos roles principales:
+        </p>
+
+        <!-- Roles breakdown -->
+        <div class="space-y-3 mb-6">
+          <div class="bg-black/50 p-3 rounded-xl border border-neon-pink/40 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-neon-pink/20 text-neon-pink shrink-0"><i class="fa-solid fa-user-secret text-lg"></i></div>
+            <div>
+              <h3 class="font-title text-lg text-neon-pink tracking-wider">1. SHERLOCK (Guía de la Sala)</h3>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Lee el caso completo y es el <strong>único que conoce la solución</strong>. Su tarea es escuchar a los detectives y responder a sus hipótesis.
+              </p>
+              <div class="mt-2 text-[11px] font-bold text-gray-200">
+                ⚠️ REGLA DE ORO: Sherlock <span class="text-neon-pink">SOLO PUEDE RESPONDER</span>:
+              </div>
+              <div class="flex gap-2 mt-2">
+                <span class="bg-green-500/20 border border-green-500 text-green-400 font-title text-xl px-4 py-0.5 rounded-lg">SÍ</span>
+                <span class="bg-red-500/20 border border-red-500 text-red-400 font-title text-xl px-4 py-0.5 rounded-lg">NO</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-black/50 p-3 rounded-xl border border-neon-cyan/40 flex items-start gap-3">
+            <div class="p-2 rounded-lg bg-neon-cyan/20 text-neon-cyan shrink-0"><i class="fa-solid fa-magnifying-glass text-lg"></i></div>
+            <div>
+              <h3 class="font-title text-lg text-neon-cyan tracking-wider">2. LOS DETECTIVES (Investigadores)</h3>
+              <p class="text-xs text-gray-300 leading-relaxed">
+                Formulan preguntas deductivas en grupo para descubrir qué ocurrió realmente antes del desenlace. Deben pensar fuera de la caja.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Sync Explanation -->
+        <div class="bg-neon-purple/10 border border-neon-purple/50 p-4 rounded-xl text-left">
+          <h3 class="font-title text-xl text-neon-purple tracking-wider mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-tower-broadcast text-sm"></i> MODO EN VIVO (SINCRONIZACIÓN ESPEJO)
+          </h3>
+          <ol class="list-decimal list-inside text-xs text-gray-300 space-y-1.5 leading-relaxed">
+            <li>Haz clic en el botón <strong class="text-neon-purple">MODO EN VIVO</strong> en el menú superior.</li>
+            <li>Elige el rol de <strong class="text-neon-pink">SHERLOCK</strong> para crear una sala y obtener tu código de sincronización único (ej: <code>SHER-8492</code>).</li>
+            <li>Los demás eligen el rol de <strong class="text-neon-cyan">DETECTIVE</strong> e ingresan el código para conectarse en vivo.</li>
+            <li>La pantalla de los Detectives avanzará automáticamente al ritmo que Sherlock dirija la investigación, manteniendo las respuestas ocultas.</li>
+          </ol>
         </div>
       </div>
     </div>
@@ -226,23 +349,38 @@
           </div>
           <a href="#slide3" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#01</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Ana y María</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Ana y María</h3>
+              <i id="indexCheck_1" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide5" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#02</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Brindis moral</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Brindis moral</h3>
+              <i id="indexCheck_2" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide7" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#03</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">El paquete cerrado</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">El paquete cerrado</h3>
+              <i id="indexCheck_3" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide9" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#04</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">La última luz</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">La última luz</h3>
+              <i id="indexCheck_4" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide11" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#05</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Llamada sin palabras</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Llamada sin palabras</h3>
+              <i id="indexCheck_5" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
         </div>
 
@@ -253,15 +391,24 @@
           </div>
           <a href="#slide13" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#06</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Habitación para la noche</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Habitación para la noche</h3>
+              <i id="indexCheck_6" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide15" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#07</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Zapatos del estreno</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Zapatos del estreno</h3>
+              <i id="indexCheck_7" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide17" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#08</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">La pequeña diferencia</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">La pequeña diferencia</h3>
+              <i id="indexCheck_8" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
         </div>
 
@@ -272,25 +419,53 @@
           </div>
           <a href="#slide19" onclick="if(document.getElementById('slide19') && document.getElementById('slide19').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#09</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Cena de sobrevivientes</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Cena de sobrevivientes</h3>
+              <i id="indexCheck_9" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide21" onclick="if(document.getElementById('slide21') && document.getElementById('slide21').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#10</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">El rescate pendiente</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">El rescate pendiente</h3>
+              <i id="indexCheck_10" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide23" onclick="if(document.getElementById('slide23') && document.getElementById('slide23').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#11</span>
-            <div class="flex-1"><h3 class="font-bold text-sm">Silencio antes del aplauso</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm">Silencio antes del aplauso</h3>
+              <i id="indexCheck_11" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
           <a href="#slide25" onclick="if(document.getElementById('slide25') && document.getElementById('slide25').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-gold/50">
             <span class="font-title text-2xl text-neon-gold">#12</span>
-            <div class="flex-1"><h3 class="font-bold text-sm text-neon-gold">Carrera de bicicletas (EXTRA)</h3></div>
+            <div class="flex-1 flex items-center justify-between">
+              <h3 class="font-bold text-sm text-neon-gold">Carrera de bicicletas (EXTRA)</h3>
+              <i id="indexCheck_12" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
+            </div>
           </a>
         </div>
+
       </div>
       
       <div class="w-full text-right mt-6">
         <span class="text-neon-gold text-[10px] opacity-60 tracking-widest uppercase">Design Ronald Moreno</span>
+      </div>
+    </div>
+
+    <!-- Streak Milestone Celebration Modal -->
+    <div id="modalStreakCelebration" class="modal">
+      <div class="glass-panel p-8 rounded-2xl max-w-md w-full text-center relative border-neon-gold shadow-[0_0_50px_rgba(250,204,21,0.3)]">
+        <button onclick="closeModal('modalStreakCelebration')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-neon-gold/20 border-2 border-neon-gold flex items-center justify-center text-neon-gold text-3xl">
+          <i class="fa-solid fa-fire-flame-curved"></i>
+        </div>
+        <h2 id="streakTitle" class="font-title text-3xl text-white mb-2">¡EN RACHA DETECTIVESCA!</h2>
+        <p id="streakMessage" class="text-sm text-gray-300 mb-6 leading-relaxed"></p>
+        <button onclick="closeModal('modalStreakCelebration')" class="w-full bg-neon-gold text-black font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors">
+          ¡CONTINUAR INVESTIGANDO!
+        </button>
       </div>
     </div>
 
@@ -333,7 +508,7 @@
     </div>
   </section>
 
-  <!-- Container for dynamically generated cases to keep file clean -->
+  <!-- Container for dynamically generated cases -->
   <div id="casesContainer"></div>
 
   <!-- Footer -->
@@ -349,98 +524,179 @@
         question: '¿Qué ocurrió realmente? ¿Cómo murieron Ana y María?',
         solTitle: 'ANA Y MARÍA ERAN PECES', 
         solution: 'Ana y María no eran personas, sino dos peces de colores. Al salir volando por el pelotazo de Pedro, el balón rompió la ventana del segundo piso e impactó la pecera, tirándola al suelo y rompiéndola. Ana y María murieron por falta de agua.',
-        imgCase: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1280&auto=format&fit=crop', // niños jugando futbol
-        imgSol: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=1280&auto=format&fit=crop' // fishes
+        imgCase: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1524704654690-b56c05c78a00?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 2, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'BRINDIS MORAL',
         case: 'Dos amigas pidieron la misma bebida. Ambas tenían exactamente los mismos ingredientes. Una terminó su bebida muy rápido. La otra la tomó despacio y murió envenenada. La que sobrevivió sabía lo que iba a pasar.',
         question: '¿Cómo pudo morir solo una si las dos bebidas eran iguales?',
         solTitle: 'EL VENENO EN EL HIELO',
         solution: 'El veneno estaba en los cubos de hielo de ambas bebidas. La primera bebió tan rápido que terminó antes de que se derritieran. Su amiga bebió despacio y consumió el veneno a medida que el hielo se derretía.',
-        imgCase: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1280&auto=format&fit=crop', // moody bar cocktails
-        imgSol: 'https://images.unsplash.com/photo-1491466424936-e304919aada7?q=80&w=1280&auto=format&fit=crop' // antarctica
+        imgCase: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1491466424936-e304919aada7?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 3, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'EL PAQUETE CERRADO',
         case: 'Un hombre apareció muerto en medio de un campo. Llevaba un paquete cerrado en la espalda. No había sido atacado por nadie. Si hubiera abierto el paquete a tiempo, habría sobrevivido.',
         question: '¿Qué ocurrió?',
         solTitle: 'PARACAÍDAS FALLIDO',
         solution: 'El hombre había saltado de un avión. El paquete era su paracaídas, que no llegó a abrirse antes de que cayera al suelo.',
-        imgCase: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1280&auto=format&fit=crop', // empty field
-        imgSol: 'https://images.unsplash.com/photo-1521336575822-6da63fb45455?q=80&w=1280&auto=format&fit=crop' // parachute
+        imgCase: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1521336575822-6da63fb45455?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 4, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'LA ÚLTIMA LUZ',
         case: 'Un hombre apagó una luz antes de irse a dormir. A la mañana siguiente descubrió que varias personas habían muerto por esa decisión. Ninguna estaba en su casa y él no las conocía.',
         question: '¿Qué luz había apagado?',
         solTitle: 'EL FARO DEL PUERTO',
         solution: 'El hombre era el encargado de un faro. Al apagarlo, dejó sin señal de orientación a los barcos que navegaban cerca de la costa durante la noche. Se produjeron accidentes en los arrecifes.',
-        imgCase: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1280&auto=format&fit=crop', // dark sea
-        imgSol: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1280&auto=format&fit=crop' // lighthouse
+        imgCase: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 5, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'LLAMADA SIN PALABRAS',
         case: 'A las dos de la madrugada en un hotel, un hombre tomó el teléfono y llamó a la habitación de al lado, ocupada por un desconocido. El otro contestó: «¿Aló?». El hombre no dijo una palabra, colgó, se acomodó y consiguió dormirse. No era una broma.',
         question: '¿Para qué hizo la llamada?',
         solTitle: 'INTERRUMPIR LOS RONQUIDOS',
         solution: 'El huésped de al lado roncaba tan fuerte que no lo dejaba dormir. Lo llamó para despertarlo. Al contestar, el vecino dejó de roncar y el hombre aprovechó ese silencio para quedarse dormido.',
-        imgCase: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1280&auto=format&fit=crop', // hotel phone
-        imgSol: 'https://images.unsplash.com/photo-1541971875076-8f970d573be6?q=80&w=1280&auto=format&fit=crop' // quiet room
+        imgCase: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1541971875076-8f970d573be6?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 6, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'HABITACIÓN PARA LA NOCHE',
         case: 'Un hombre cuyo auto se averió consigue hospedarse en la única habitación disponible de un pequeño hotel de carretera. Entró, dejó sus cosas y abrió el clóset para guardar su chaqueta. Al ver lo que había dentro, retrocedió y susurró: «Estoy muerto».',
         question: '¿Qué encontró y por qué sintió que su vida estaba en peligro?',
         solTitle: 'EL SECRETO DEL CLÓSET',
         solution: 'El viajero era un hombre negro. Dentro del clóset encontró una túnica y una capucha características del Ku Klux Klan, pertenecientes al dueño del hotel.',
-        imgCase: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop', // creepy motel
-        imgSol: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1280&auto=format&fit=crop' // dark closet
+        imgCase: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 7, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'ZAPATOS DEL ESTRENO',
         case: 'Poco antes de salir a escena, ella reemplazó sus zapatos habituales rotos por unos nuevos algo más altos. La función comenzó. Su marido hizo exactamente lo que habían ensayado. Ella murió delante del público. Él no quería matarla y los zapatos no la hicieron tropezar.',
         question: '¿Qué ocurrió?',
         solTitle: 'LANZAMIENTO MILIMÉTRICO',
         solution: 'Eran artistas de circo. Él realizaba un número de lanzamiento de cuchillos con los ojos vendados. Los zapatos nuevos la elevaron unos centímetros: un cuchillo que antes pasaba sobre su cabeza la alcanzó.',
-        imgCase: 'https://images.unsplash.com/photo-1469488865564-c2de10f69f96?q=80&w=1280&auto=format&fit=crop', // stage spotlight
-        imgSol: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop' // target
+        imgCase: 'https://images.unsplash.com/photo-1469488865564-c2de10f69f96?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 8, level: 2, lvlText: 'NIVEL 2', lvlColor: 'neon-cyan', title: 'LA PEQUEÑA DIFERENCIA',
         case: 'Encontraron a un hombre muerto en el desierto en ropa interior y tenía un pequeño palillo de madera apretado en la mano. A kilómetros había una maleta y ropa. Ninguno de sus acompañantes lo empujó.',
         question: '¿Por qué murió?',
         solTitle: 'EL GLOBO AEROSTÁTICO',
         solution: 'Viajaban en un globo aerostático que perdía altura. Arrojaron ropa para reducir peso. Como seguían descendiendo, sortearon quién debía saltar: cada uno tomó un palillo. El hombre sacó el más corto y saltó.',
-        imgCase: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop', // desert night
-        imgSol: 'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1280&auto=format&fit=crop' // balloon
+        imgCase: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1507608616759-54f48f0af0ee?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 9, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'CENA DE SOBREVIVIENTES', premium: true,
         case: 'Un hombre pidió albatros auténtico en un restaurante. Probó un bocado, hizo preguntas al chef, y fue directo a la policía a pedir que reabrieran la investigación sobre la desaparición de su primera esposa hace años. La comida estaba en buen estado.',
         question: '¿Qué relación había entre aquella cena y la desaparición?',
         solTitle: 'EL SABOR DE LA VERDAD',
         solution: 'Años atrás, naufragó con su esposa quedando ciego. Sus compañeros le dieron carne que identificaron como "albatros". Al probar el albatros real en el restaurante, comprendió que en la isla se había comido a su esposa.',
-        imgCase: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1280&auto=format&fit=crop', // restaurant
-        imgSol: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop' // shipwreck island
+        imgCase: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 10, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'EL RESCATE PENDIENTE', premium: true,
         case: 'Un preso logró salir del recinto sin ser descubierto. Permaneció inmóvil en completa oscuridad esperando su rescate. Horas después encendió un fósforo, vio un rostro junto al suyo y comprendió que nadie vendría a rescatarlo.',
         question: '¿Dónde estaba y de quién era el rostro?',
         solTitle: 'ENTERRADO VIVO',
         solution: 'Había sobornado al sepulturero de la prisión para ocultarse en el ataúd junto a un cadáver. Al encender el fósforo descubrió que el rostro a su lado era el del mismísimo sepulturero muerto.',
-        imgCase: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1280&auto=format&fit=crop', // prison cell
-        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop' // dark graveyard
+        imgCase: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 11, level: 3, lvlText: 'NIVEL 3', lvlColor: 'neon-purple', title: 'SILENCIO ANTES DEL APLAUSO', premium: true,
         case: 'El artista principal comenzó su número acompañado por la orquesta. A mitad de la actuación ocurrió un apagón. El lugar quedó a oscuras y la música se detuvo. El artista dio un paso y murió. El silencio provocó el desenlace.',
         question: '¿Por qué?',
         solTitle: 'EL EQUILIBRISTA',
         solution: 'Era un equilibrista que cruzaba la cuerda floja con los ojos vendados. La orquesta debía dejar de tocar cuando él alcanzara la plataforma. Creyó que el silencio indicaba que había llegado y dio el paso al vacío.',
-        imgCase: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop', // circus stage
-        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop' // tightrope void
+        imgCase: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=1280&auto=format&fit=crop'
       },
       { id: 12, level: 4, lvlText: 'NIVEL EXTRA', lvlColor: 'neon-gold', title: 'CARRERA DE BICICLETAS', premium: true,
         case: 'Dos ciclistas competían, pero ambos avanzaban desesperantemente lento para NO cruzar primero. La organizadora se acercó, les susurró algo, y ambos montaron sus bicis pedaleando a toda velocidad para llegar primero. El premio era el mismo.',
         question: '¿Qué les dijo?',
         solTitle: 'INTERCAMBIO DE VEHÍCULO',
         solution: 'El premio era para el dueño de la bicicleta que llegara en ÚLTIMO lugar. La organizadora les dijo: «Intercambien sus bicicletas». Al llevar la bici del rival a la meta rápido, la propia quedaba de última.',
-        imgCase: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=1280&auto=format&fit=crop', // bike road
-        imgSol: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=1280&auto=format&fit=crop' // race finish
+        imgCase: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?q=80&w=1280&auto=format&fit=crop',
+        imgSol: 'https://images.unsplash.com/photo-1511994298241-608e28f14fde?q=80&w=1280&auto=format&fit=crop'
       }
     ];
+
+    // --- Dynamic State & Synchronization Variables ---
+    let currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
+    let currentRoomCode = null;
+    let isSessionPaused = false;
+    let syncChannel = null;
+
+    if (typeof BroadcastChannel !== 'undefined') {
+      syncChannel = new BroadcastChannel('black_stories_sync_channel');
+      syncChannel.onmessage = (e) => handleSyncMessage(e.data);
+    }
+
+    // Initialize LocalStorage solved state checks
+    function isCaseSolved(id) {
+      return localStorage.getItem(`caso_${id}_resuelto`) === 'true';
+    }
+
+    function markCaseSolved(id) {
+      const wereSolved = casesData.filter(c => isCaseSolved(c.id)).length;
+      localStorage.setItem(`caso_${id}_resuelto`, 'true');
+      updateSolvedBadges();
+      
+      const newSolvedCount = casesData.filter(c => isCaseSolved(c.id)).length;
+      
+      if (currentRole === 'sherlock' && syncChannel) {
+        syncChannel.postMessage({ type: 'CASE_SOLVED', caseId: id, roomCode: currentRoomCode });
+      }
+
+      // Check milestones if score increased
+      if (newSolvedCount > wereSolved) {
+        checkStreakMilestone(newSolvedCount);
+      }
+    }
+
+    function checkStreakMilestone(count) {
+      const streakTitle = document.getElementById('streakTitle');
+      const streakMessage = document.getElementById('streakMessage');
+      let trigger = false;
+
+      if (count === 3) {
+        streakTitle.innerText = "¡FELICITACIONES! VAS EN RACHA 🔥";
+        streakMessage.innerHTML = "¡Increíble deducción! Has resuelto <strong class='text-neon-cyan'>3 casos</strong>. Tu mente analítica está muy afilada. ¿Listos para el siguiente nivel de misterio?";
+        trigger = true;
+      } else if (count === 6) {
+        streakTitle.innerText = "¡RACHA IMPARABLE! 🕵️‍♂️✨";
+        streakMessage.innerHTML = "¡Extraordinario trabajo en equipo! Llevas <strong class='text-neon-pink'>6 casos resueltos</strong>. Ya formas parte de la élite de detectives de Black Stories.";
+        trigger = true;
+      } else if (count === 9) {
+        streakTitle.innerText = "¡MAESTRÍA ABSOLUTA! 🏆⚡";
+        streakMessage.innerHTML = "¡Impresionante! Has descifrado <strong class='text-neon-gold'>9 enigmas macabros</strong>. Muy pocos alcanzan este nivel de pensamiento lateral.";
+        trigger = true;
+      }
+
+      if (trigger) {
+        openModal('modalStreakCelebration');
+      }
+    }
+
+    function updateSolvedBadges() {
+      casesData.forEach(c => {
+        const badgeEl = document.getElementById(`badgeSolved_${c.id}`);
+        const indexCheckEl = document.getElementById(`indexCheck_${c.id}`);
+        const isSolved = isCaseSolved(c.id);
+
+        if (badgeEl) {
+          if (isSolved) {
+            badgeEl.classList.remove('hidden');
+          } else {
+            badgeEl.classList.add('hidden');
+          }
+        }
+
+        if (indexCheckEl) {
+          if (isSolved) {
+            indexCheckEl.classList.remove('hidden');
+          } else {
+            indexCheckEl.classList.add('hidden');
+          }
+        }
+      });
+    }
 
     // --- Generate HTML for Cases ---
     const container = document.getElementById('casesContainer');
@@ -470,21 +726,44 @@
                 <p class="font-bold text-white">${c.question}</p>
               </div>
             </div>
-            <div class="text-right">
-              <a href="#slide${slideSolId}" class="inline-block text-${c.lvlColor} font-bold hover:text-white transition-colors">VER SOLUCIÓN <i class="fa-solid fa-arrow-right ml-1"></i></a>
+            <div class="flex justify-between items-center flex-wrap gap-4">
+              <span id="badgeSolved_${c.id}" class="${isCaseSolved(c.id) ? '' : 'hidden'} text-xs font-bold text-green-400 bg-green-500/20 px-3 py-1 rounded-full border border-green-500">
+                <i class="fa-solid fa-check mr-1"></i> RESUELTO
+              </span>
+              <div class="sherlock-only">
+                <div class="relative inline-block">
+                  <button type="button" 
+                     onmousedown="startHoldToReveal(event, ${slideSolId})" 
+                     onmouseup="cancelHoldToReveal()" 
+                     onmouseleave="cancelHoldToReveal()"
+                     ontouchstart="startHoldToReveal(event, ${slideSolId})" 
+                     ontouchend="cancelHoldToReveal()"
+                     class="inline-flex items-center gap-2 text-${c.lvlColor} font-bold hover:text-white transition-colors glass-panel px-6 py-3 rounded-xl border border-${c.lvlColor}/40">
+                    <span>MANTÉN 3 SEG PARA REVELAR</span>
+                    <svg class="w-6 h-6 transform -rotate-90">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" class="opacity-30"/>
+                      <circle id="holdCircle_${slideSolId}" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="63" stroke-dashoffset="63" class="transition-all duration-75"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- SOLUCION ${c.id} -->
-        <section id="slide${slideSolId}" class="slide-section items-center justify-center ${premiumClass}">
+        <!-- SOLUCION ${c.id} (Solo visible por Sherlock o en Solo Mode) -->
+        <section id="slide${slideSolId}" class="slide-section items-center justify-center ${premiumClass} sherlock-only-slide">
           <img src="${c.imgSol}" class="bg-cover-image" alt="Solution background">
           <div class="bg-overlay" style="background: linear-gradient(90deg, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.6) 100%);"></div>
           <div class="max-w-4xl w-full z-10 flex flex-col md:flex-row gap-8 items-center">
             <div class="flex-1 glass-panel p-8 sm:p-12 rounded-3xl border-neon-cyan text-left shadow-[0_0_40px_rgba(0,240,255,0.2)]">
               <p class="text-neon-cyan font-title text-2xl tracking-widest mb-2">VERDAD REVELADA</p>
               <h2 class="font-title text-5xl sm:text-6xl text-white mb-6 leading-none">${c.solTitle}</h2>
-              <p class="text-lg text-gray-200 leading-relaxed">${c.solution}</p>
+              <p class="text-lg text-gray-200 leading-relaxed mb-6">${c.solution}</p>
+              
+              <button onclick="registrarVictoriaDetective(${c.id})" class="bg-green-500/20 border border-green-500 text-green-400 hover:bg-green-500 hover:text-black font-bold px-6 py-3 rounded-xl transition-all">
+                <i class="fa-solid fa-trophy mr-2"></i> MARCAR COMO RESUELTO POR DETECTIVES
+              </button>
             </div>
             <div class="w-full md:w-64 flex flex-col gap-4">
               <a href="#slide2" class="glass-panel text-center px-4 py-4 rounded-xl text-sm font-bold hover:bg-white/10 transition-colors w-full"><i class="fa-solid fa-list mb-2 block text-2xl"></i> IR AL ÍNDICE</a>
@@ -496,9 +775,152 @@
     });
     container.innerHTML = htmlContent;
 
+    // --- Press & Hold 3 Seconds Mechanism ---
+    let holdStartTime = 0;
+    let holdInterval = null;
+
+    function startHoldToReveal(e, targetSlideId) {
+      holdStartTime = Date.now();
+      const circle = document.getElementById(`holdCircle_${targetSlideId}`);
+      
+      if (holdInterval) clearInterval(holdInterval);
+
+      holdInterval = setInterval(() => {
+        const elapsed = Date.now() - holdStartTime;
+        const progress = Math.min(elapsed / 3000, 1.0);
+        if (circle) {
+          circle.style.strokeDashoffset = (63 - (63 * progress)).toString();
+        }
+
+        if (elapsed >= 3000) {
+          cancelHoldToReveal();
+          window.location.hash = `#slide${targetSlideId}`;
+        }
+      }, 50);
+    }
+
+    function cancelHoldToReveal() {
+      if (holdInterval) clearInterval(holdInterval);
+      holdInterval = null;
+      document.querySelectorAll('[id^="holdCircle_"]').forEach(c => {
+        c.style.strokeDashoffset = '63';
+      });
+    }
+
+    function registrarVictoriaDetective(caseId) {
+      markCaseSolved(caseId);
+      alert("¡Misterio sellado y resuelto! El check de victoria ha sido registrado.");
+    }
+
+    // --- Role & Multiplayer Synchronization ---
+    function setupRole(role) {
+      currentRole = role;
+      const btnStatus = document.getElementById('btnRoleStatus');
+      const sherlockBox = document.getElementById('sherlockRoomBox');
+      const detectiveBox = document.getElementById('detectiveRoomBox');
+
+      if (role === 'sherlock') {
+        currentRoomCode = 'SHER-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('sherlockRoomCode').innerText = currentRoomCode;
+        btnStatus.innerHTML = `<i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK: ${currentRoomCode}`;
+        sherlockBox.classList.remove('hidden');
+        detectiveBox.classList.add('hidden');
+        document.body.classList.remove('role-detective');
+      } else if (role === 'detective') {
+        sherlockBox.classList.add('hidden');
+        detectiveBox.classList.remove('hidden');
+      }
+      updateRoleDOMVisibility();
+    }
+
+    function joinRoom() {
+      const codeInput = document.getElementById('inputJoinCode');
+      const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
+      if (!code) {
+        alert("Por favor ingresa un código de sala válido.");
+        return;
+      }
+      currentRoomCode = code;
+      currentRole = 'detective';
+      document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVE: ${currentRoomCode}`;
+      document.body.classList.add('role-detective');
+      closeModal('modalRoleSelector');
+      updateRoleDOMVisibility();
+    }
+
+    function toggleSessionPause() {
+      isSessionPaused = !isSessionPaused;
+      const btn = document.getElementById('btnTogglePauseSession');
+      if (isSessionPaused) {
+        btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> REANUDAR SESIÓN EN VIVO`;
+        btn.classList.add('bg-neon-pink', 'text-white');
+      } else {
+        btn.innerHTML = `<i class="fa-solid fa-pause mr-1"></i> PAUSAR SESIÓN (LOBBY DE ESPERA)`;
+        btn.classList.remove('bg-neon-pink', 'text-white');
+      }
+
+      if (syncChannel) {
+        syncChannel.postMessage({ type: 'PAUSE_STATE', isPaused: isSessionPaused, roomCode: currentRoomCode });
+      }
+    }
+
+    function updateRoleDOMVisibility() {
+      const isDetective = (currentRole === 'detective');
+      document.querySelectorAll('.sherlock-only, .sherlock-only-slide').forEach(el => {
+        if (isDetective) {
+          el.style.display = 'none';
+        } else {
+          el.style.display = '';
+        }
+      });
+    }
+
+    function handleSyncMessage(data) {
+      if (!data || data.roomCode !== currentRoomCode) return;
+      
+      if (data.type === 'PAUSE_STATE' && currentRole === 'detective') {
+        const overlay = document.getElementById('detectiveLobbyOverlay');
+        if (data.isPaused) {
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+        } else {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('flex');
+        }
+      }
+
+      if (data.type === 'CASE_SOLVED') {
+        markCaseSolved(data.caseId);
+      }
+    }
+
+    function copyRoomCode() {
+      if (currentRoomCode) {
+        var dummy = document.createElement('input');
+        document.body.appendChild(dummy);
+        dummy.value = currentRoomCode;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        alert(`Código de sala ${currentRoomCode} copiado al portapapeles.`);
+      }
+    }
+
+    window.addEventListener('hashchange', () => {
+      if (currentRole === 'sherlock' && syncChannel) {
+        syncChannel.postMessage({ type: 'NAVIGATE', hash: window.location.hash, roomCode: currentRoomCode });
+      }
+    });
+
     // --- Modals Logic ---
-    function openModal(id) { document.getElementById(id).classList.add('active'); }
-    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    function openModal(id) { 
+      const el = document.getElementById(id);
+      if (el) el.classList.add('active'); 
+    }
+    function closeModal(id) { 
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active'); 
+    }
 
     // --- Unlock Logic ---
     function checkCode() {
@@ -554,7 +976,7 @@
         updateRainParticles();
         drawRain();
         
-        // Aumenta cada 3 minutos (180000 ms)
+        // Increases every 3 minutes (180000 ms)
         rainTimer = setInterval(increaseStorm, 180000);
       });
     }
@@ -564,10 +986,8 @@
         rainLevel++;
         document.getElementById('btnToggleAudio').innerHTML = `<i class="fa-solid fa-volume-high mr-1 text-neon-cyan"></i> Lloviendo (Lvl ${rainLevel})`;
         
-        // Audio changes
-        const targetVol = -30 + (rainLevel * 2.5); // Sube de -30 a -5
+        const targetVol = -30 + (rainLevel * 2.5);
         let targetFreq = 600 + (rainLevel * 300);
-        // Filtro más agudo a partir de lvl 5 para simular granizo contra vidrio
         if(rainLevel >= 5) targetFreq += (rainLevel - 4) * 800;
         
         noiseSynth.volume.rampTo(targetVol, 2);
@@ -586,12 +1006,11 @@
           y: Math.random() * canvas.height,
           l: Math.random() * (15 + rainLevel * 3) + 10,
           v: Math.random() * (10 + rainLevel * 2) + 10,
-          thickness: Math.min(1 + Math.floor(rainLevel/3), 4), // gotas más gruesas
-          isHail: rainLevel >= 5 && Math.random() < ((rainLevel - 4) * 0.15) // Granizo!
+          thickness: Math.min(1 + Math.floor(rainLevel/3), 4),
+          isHail: rainLevel >= 5 && Math.random() < ((rainLevel - 4) * 0.15)
         });
       }
 
-      // Visual Cracks & Eclipse Updates
       const crackSvg = document.getElementById('crackSvg');
       const eclipse = document.getElementById('eclipseLayer');
       
@@ -615,7 +1034,7 @@
           ctx.fill();
         } else {
           ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p.x + p.l * 0.2, p.y + p.l); // slight wind angle
+          ctx.lineTo(p.x + p.l * 0.2, p.y + p.l);
           ctx.strokeStyle = `rgba(200, 220, 255, ${0.1 + (rainLevel * 0.05)})`;
           ctx.lineWidth = p.thickness;
           ctx.stroke();
@@ -631,6 +1050,11 @@
       });
       requestAnimationFrame(drawRain);
     }
+
+    // Initialize badges on load
+    window.onload = function() {
+      updateSolvedBadges();
+    };
   </script>
 </body>
 </html>
