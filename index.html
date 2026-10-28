@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Black Stories - Dynamic Mystery Game</title>
   
   <!-- Fonts -->
@@ -40,11 +40,14 @@
   </script>
 
   <style>
-    body {
+    html, body {
       background-color: #050508;
       color: white;
       scroll-behavior: smooth;
       overflow-x: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100%;
     }
     
     .glass-panel {
@@ -102,8 +105,22 @@
     .premium-locked {
       display: none !important;
     }
-    
-    /* DETECTIVE ABSOLUTE SLAVE SHIELD */
+
+    /* ========================================================
+       DETECTIVE ABSOLUTE LOCKDOWN & SCROLL FREEZE SHIELD
+       ======================================================== */
+    body.role-detective, 
+    html:has(body.role-detective) {
+      overflow: hidden !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      position: fixed !important;
+      width: 100% !important;
+      touch-action: none !important;
+      -webkit-overflow-scrolling: none !important;
+    }
+
+    /* Fullscreen Touch Shield for Detectives */
     #detectiveShield {
       display: none;
       position: fixed;
@@ -111,21 +128,36 @@
       z-index: 45;
       background: transparent;
       cursor: not-allowed;
-      pointer-events: auto;
+      pointer-events: auto !important;
+      touch-action: none !important;
     }
 
     body.role-detective #detectiveShield {
       display: block !important;
     }
 
-    /* Force whitelist controls above the shield */
+    /* Lock all pointer actions under Detective Mode except Whitelisted Controls */
+    body.role-detective .slide-section,
+    body.role-detective .slide-section * {
+      pointer-events: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    /* Whitelisted Control Elements above the Shield */
     .whitelist-control {
       position: relative;
       z-index: 50 !important;
       pointer-events: auto !important;
+      touch-action: auto !important;
     }
 
-    /* Hide sherlock-only controls when in detective mode */
+    .whitelist-control * {
+      pointer-events: auto !important;
+      touch-action: auto !important;
+    }
+
+    /* Hide Sherlock-only elements when in Detective Mode */
     body.role-detective .sherlock-only {
       display: none !important;
     }
@@ -137,7 +169,7 @@
 </head>
 <body class="font-body text-gray-200 antialiased">
 
-  <!-- ABSOLUTE TOUCH SHIELD FOR DETECTIVES -->
+  <!-- ABSOLUTE TOUCH & SCROLL SHIELD FOR DETECTIVES -->
   <div id="detectiveShield" title="Pantalla bloqueada en Modo Espejo por Sherlock"></div>
 
   <!-- Google Translate Element -->
@@ -864,6 +896,8 @@
       window.currentRoomCode = code;
       window.currentRole = 'detective';
       document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVE: ${window.currentRoomCode}`;
+      
+      // Activate strict Detective mode & Scroll lockdown
       document.body.classList.add('role-detective');
       closeModal('modalRoleSelector');
 
