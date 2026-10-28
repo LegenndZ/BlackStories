@@ -49,6 +49,41 @@
       padding: 0;
       width: 100%;
     }
+
+    /* ABSOLUTE ESCAPE-PROOF LOCK FOR DETECTIVES */
+    body.role-detective,
+    html.role-detective {
+      overflow: hidden !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      position: fixed !important;
+      width: 100vw !important;
+      touch-action: none !important;
+      -webkit-overflow-scrolling: none !important;
+      user-select: none !important;
+      -webkit-user-select: none !important;
+    }
+
+    #detectiveShield {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: transparent;
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    body.role-detective #detectiveShield {
+      display: block !important;
+    }
+
+    body.role-detective section,
+    body.role-detective .case-scroll-container {
+      overflow: hidden !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
     
     .glass-panel {
       background: rgba(10, 10, 18, 0.88);
@@ -904,6 +939,7 @@
       if (role === 'sherlock') {
         window.currentRole = 'sherlock';
         document.body.classList.remove('role-detective');
+        document.documentElement.classList.remove('role-detective');
         sherlockBox.classList.remove('hidden');
         detectiveBox.classList.add('hidden');
 
@@ -937,11 +973,42 @@
       
       // Activate strict Detective mode & Scroll lockdown
       document.body.classList.add('role-detective');
+      document.documentElement.classList.add('role-detective');
       closeModal('modalRoleSelector');
 
       // Connect Detective via Firebase Realtime Listener
       connectDetectiveToFirebaseRoom(window.currentRoomCode);
     };
+
+    // Strict Event Interceptor & Shield Listener for Detectives
+    const preventDetectiveScroll = function(e) {
+      if (window.currentRole === 'detective') {
+        // Allow interaction ONLY if event originates from a whitelisted control or modal
+        if (e.target && e.target.closest && e.target.closest('.whitelist-control')) {
+          return;
+        }
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+        e.stopPropagation();
+        return false;
+      }
+    };
+
+    ['touchstart', 'touchmove', 'touchend', 'wheel', 'scroll', 'keydown', 'contextmenu'].forEach(evtName => {
+      window.addEventListener(evtName, preventDetectiveScroll, { passive: false });
+    });
+
+    // Intercept click attempts on cases/buttons for detectives
+    document.addEventListener('click', function(e) {
+      if (window.currentRole === 'detective') {
+        if (!e.target.closest('.whitelist-control')) {
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      }
+    }, true);
 
     window.toggleSessionPause = function() {
       window.isSessionPaused = !window.isSessionPaused;
