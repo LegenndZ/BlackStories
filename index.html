@@ -103,11 +103,16 @@
       display: none !important;
     }
     
-    /* Detective Lock Mode: prevents detectives from clicking navigation links */
+    /* Detective Lock Mode: prevents detectives from clicking navigation links or changing cases */
     body.role-detective a:not([data-allow-detective]), 
     body.role-detective button:not([data-allow-detective]) {
       pointer-events: none !important;
       opacity: 0.7;
+    }
+
+    /* Role visibility rules */
+    body.role-detective .sherlock-only {
+      display: none !important;
     }
 
     /* Google Translate fix */
@@ -255,75 +260,49 @@
     <div id="modalPurpose" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-cyan max-h-[90vh] overflow-y-auto">
         <button data-allow-detective="true" onclick="closeModal('modalPurpose')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h2 class="font-title text-3xl text-neon-cyan mb-4 flex items-center gap-2">
-          <i class="fa-solid fa-lightbulb"></i> ¿PARA QUÉ SIRVE ESTE JUEGO?
-        </h2>
-        <p class="text-sm text-gray-300 leading-relaxed mb-4">
-          Pensé en este juego para quienes buscan una actividad diferente: ideal para <strong>abrir un taller de forma creativa</strong>, <strong>romper el hielo</strong> con un equipo de trabajo o <strong>llevar un reto estimulante al aula de clase</strong>.
+        <h2 class="font-title text-3xl text-neon-cyan mb-4"><i class="fa-solid fa-lightbulb mr-2"></i>¿PARA QUÉ SIRVE ESTE JUEGO?</h2>
+        <p class="text-sm text-gray-300 leading-relaxed space-y-3">
+          <span>Pensé en este juego para quienes buscan una <strong>actividad diferente</strong>:</span>
+          <br><br>
+          • <strong>Abrir un taller de forma creativa</strong> y activar la mente de los participantes.<br>
+          • <strong>Romper el hielo</strong> con un equipo de trabajo o grupo de estudio.<br>
+          • <strong>Llevar un reto estimulante a clase</strong> para fomentar la lógica deductiva.<br>
+          • <strong>Compartir con amigos o en familia</strong> durante reuniones o viajes.
+          <br><br>
+          Es un juego diseñado para <strong>desatar la creatividad</strong> y el pensamiento lateral. ¡Se puede jugar desde <strong>2 personas hasta 80 personas</strong> al mismo tiempo!
         </p>
-        <p class="text-sm text-gray-300 leading-relaxed mb-4">
-          También es perfecto para jugar entre amigos o en familia durante una reunión o un viaje. Es una herramienta diseñada para desatar la creatividad de todos los participantes y se adapta desde <strong>2 hasta 80 personas</strong> al mismo tiempo.
-        </p>
-        <div class="bg-black/50 p-4 rounded-xl border border-neon-cyan/30 text-center">
-          <span class="text-xs text-neon-cyan font-bold tracking-widest uppercase">
-            <i class="fa-solid fa-users mr-1"></i> IDEAL PARA DIVERSAS DINÁMICAS Y GRUPOS
-          </span>
-        </div>
       </div>
     </div>
 
     <div id="modalRules" class="modal">
       <div class="glass-panel p-8 rounded-2xl max-w-lg w-full text-left relative border-neon-gold max-h-[90vh] overflow-y-auto">
         <button data-allow-detective="true" onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h2 class="font-title text-3xl text-neon-gold mb-3 flex items-center gap-2">
-          <i class="fa-solid fa-book-skull"></i> ¿CÓMO SE JUEGA?
-        </h2>
+        <h2 class="font-title text-3xl text-neon-gold mb-3">¿CÓMO SE JUEGA Y ROLES?</h2>
         
-        <p class="text-xs text-gray-300 leading-relaxed mb-4">
-          Un juego de misterio, lógica y pensamiento lateral. Se dividen los jugadores en dos roles principales:
-        </p>
-
-        <!-- Roles breakdown -->
-        <div class="space-y-3 mb-6">
-          <div class="bg-black/50 p-3 rounded-xl border border-neon-pink/40 flex items-start gap-3">
-            <div class="p-2 rounded-lg bg-neon-pink/20 text-neon-pink shrink-0"><i class="fa-solid fa-user-secret text-lg"></i></div>
-            <div>
-              <h3 class="font-title text-lg text-neon-pink tracking-wider">1. SHERLOCK (Guía de la Sala)</h3>
-              <p class="text-xs text-gray-300 leading-relaxed">
-                Lee el caso completo y es el <strong>único que conoce la solución</strong>. Su tarea es escuchar a los detectives y responder a sus hipótesis.
-              </p>
-              <div class="mt-2 text-[11px] font-bold text-gray-200">
-                ⚠️ REGLA DE ORO: Sherlock <span class="text-neon-pink">SOLO PUEDE RESPONDER</span>:
-              </div>
-              <div class="flex gap-2 mt-2">
-                <span class="bg-green-500/20 border border-green-500 text-green-400 font-title text-xl px-4 py-0.5 rounded-lg">SÍ</span>
-                <span class="bg-red-500/20 border border-red-500 text-red-400 font-title text-xl px-4 py-0.5 rounded-lg">NO</span>
-              </div>
+        <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+          <div class="bg-black/40 p-3 rounded-xl border border-neon-pink/30">
+            <h3 class="font-bold text-neon-pink text-sm mb-1"><i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK (Guía de la Sala)</h3>
+            <p>Es la única persona que conoce la solución oculta. Lee el caso en voz alta y responde las preguntas de los detectives únicamente con:</p>
+            <div class="flex gap-2 my-2 justify-center">
+              <span class="bg-green-500/20 border border-green-500 text-green-400 font-title text-lg px-3 py-0.5 rounded">SÍ</span>
+              <span class="bg-red-500/20 border border-red-500 text-red-400 font-title text-lg px-3 py-0.5 rounded">NO</span>
+              <span class="bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-title text-lg px-3 py-0.5 rounded">IRRELEVANTE</span>
             </div>
           </div>
 
-          <div class="bg-black/50 p-3 rounded-xl border border-neon-cyan/40 flex items-start gap-3">
-            <div class="p-2 rounded-lg bg-neon-cyan/20 text-neon-cyan shrink-0"><i class="fa-solid fa-magnifying-glass text-lg"></i></div>
-            <div>
-              <h3 class="font-title text-lg text-neon-cyan tracking-wider">2. LOS DETECTIVES (Investigadores)</h3>
-              <p class="text-xs text-gray-300 leading-relaxed">
-                Formulan preguntas deductivas en grupo para descubrir qué ocurrió realmente antes del desenlace. Deben pensar fuera de la caja.
-              </p>
-            </div>
+          <div class="bg-black/40 p-3 rounded-xl border border-neon-cyan/30">
+            <h3 class="font-bold text-neon-cyan text-sm mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVES (Jugadores)</h3>
+            <p>Formulan preguntas inteligentes para reconstruir los hechos. Deben pensar fuera de la caja y cuestionar todas sus suposiciones.</p>
           </div>
-        </div>
 
-        <!-- Live Sync Explanation -->
-        <div class="bg-neon-purple/10 border border-neon-purple/50 p-4 rounded-xl text-left">
-          <h3 class="font-title text-xl text-neon-purple tracking-wider mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-tower-broadcast text-sm"></i> MODO EN VIVO (SINCRONIZACIÓN ESPEJO)
-          </h3>
-          <ol class="list-decimal list-inside text-xs text-gray-300 space-y-1.5 leading-relaxed">
-            <li>Haz clic en el botón <strong class="text-neon-purple">MODO EN VIVO</strong> en el menú superior.</li>
-            <li>Elige el rol de <strong class="text-neon-pink">SHERLOCK</strong> para crear una sala y obtener tu código de sincronización único (ej: <code>SHER-8492</code>).</li>
-            <li>Los demás eligen el rol de <strong class="text-neon-cyan">DETECTIVE</strong> e ingresan el código para conectarse en vivo.</li>
-            <li>La pantalla de los Detectives avanzará automáticamente al ritmo que Sherlock dirija la investigación, manteniendo las respuestas ocultas.</li>
-          </ol>
+          <div class="bg-black/40 p-3 rounded-xl border border-neon-purple/30">
+            <h3 class="font-bold text-neon-purple text-sm mb-1"><i class="fa-solid fa-tower-broadcast mr-1"></i> MODO EN VIVO (Mesa Multijugador)</h3>
+            <ol class="list-decimal pl-4 space-y-1">
+              <li>Haz clic en el botón <strong class="text-white">MODO EN VIVO</strong> arriba a la derecha.</li>
+              <li>El anfitrión selecciona <strong class="text-neon-pink">SHERLOCK</strong> para recibir un código de sala (ej. SHER-8492).</li>
+              <li>Los jugadores eligen <strong class="text-neon-cyan">DETECTIVE</strong> e ingresan el código para sincronizar su pantalla en tiempo real.</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
@@ -354,40 +333,30 @@
           <div class="flex justify-between items-center border-b-2 border-neon-pink pb-2 mb-2">
             <span class="font-title text-xl text-neon-pink tracking-widest">NIVEL 1 - INICIACIÓN</span>
           </div>
-          <a href="#slide3" onclick="onCaseSelect(1)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+          <a href="#slide3" onclick="window.onCaseSelect(1)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#01</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Ana y María</h3>
-              <i id="indexCheck_1" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Ana y María</h3></div>
+            <i id="indexCheck_1" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide5" onclick="onCaseSelect(2)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+          <a href="#slide5" onclick="window.onCaseSelect(2)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#02</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Brindis moral</h3>
-              <i id="indexCheck_2" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Brindis moral</h3></div>
+            <i id="indexCheck_2" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide7" onclick="onCaseSelect(3)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+          <a href="#slide7" onclick="window.onCaseSelect(3)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#03</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">El paquete cerrado</h3>
-              <i id="indexCheck_3" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">El paquete cerrado</h3></div>
+            <i id="indexCheck_3" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide9" onclick="onCaseSelect(4)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+          <a href="#slide9" onclick="window.onCaseSelect(4)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#04</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">La última luz</h3>
-              <i id="indexCheck_4" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">La última luz</h3></div>
+            <i id="indexCheck_4" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide11" onclick="onCaseSelect(5)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
+          <a href="#slide11" onclick="window.onCaseSelect(5)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-pink">#05</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Llamada sin palabras</h3>
-              <i id="indexCheck_5" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Llamada sin palabras</h3></div>
+            <i id="indexCheck_5" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
         </div>
 
@@ -396,64 +365,49 @@
           <div class="flex justify-between items-center border-b-2 border-neon-cyan pb-2 mb-2">
             <span class="font-title text-xl text-neon-cyan tracking-widest">NIVEL 2 - AVANZADO</span>
           </div>
-          <a href="#slide13" onclick="onCaseSelect(6)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+          <a href="#slide13" onclick="window.onCaseSelect(6)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#06</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Habitación para la noche</h3>
-              <i id="indexCheck_6" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Habitación para la noche</h3></div>
+            <i id="indexCheck_6" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide15" onclick="onCaseSelect(7)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+          <a href="#slide15" onclick="window.onCaseSelect(7)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#07</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Zapatos del estreno</h3>
-              <i id="indexCheck_7" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Zapatos del estreno</h3></div>
+            <i id="indexCheck_7" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide17" onclick="onCaseSelect(8)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
+          <a href="#slide17" onclick="window.onCaseSelect(8)" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-pink hover:translate-x-1 transition-all">
             <span class="font-title text-2xl text-neon-cyan">#08</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">La pequeña diferencia</h3>
-              <i id="indexCheck_8" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">La pequeña diferencia</h3></div>
+            <i id="indexCheck_8" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
         </div>
 
-        <!-- Nivel 3 & Extra (Titles Visible, Content Locked) -->
+        <!-- Nivel 3 & Extra -->
         <div id="premiumSection" class="flex flex-col gap-3">
           <div class="flex justify-between items-center border-b-2 border-neon-purple pb-2 mb-2">
             <span class="font-title text-xl text-neon-purple tracking-widest">NIVEL 3 & EXTRA <i class="fa-solid fa-lock ml-1 text-xs"></i></span>
           </div>
-          <a href="#slide19" onclick="if(document.getElementById('slide19') && document.getElementById('slide19').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } else { onCaseSelect(9); }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+          <a href="#slide19" onclick="if(document.getElementById('slide19') && document.getElementById('slide19').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } window.onCaseSelect(9);" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#09</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Cena de sobrevivientes</h3>
-              <i id="indexCheck_9" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Cena de sobrevivientes</h3></div>
+            <i id="indexCheck_9" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide21" onclick="if(document.getElementById('slide21') && document.getElementById('slide21').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } else { onCaseSelect(10); }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+          <a href="#slide21" onclick="if(document.getElementById('slide21') && document.getElementById('slide21').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } window.onCaseSelect(10);" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#10</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">El rescate pendiente</h3>
-              <i id="indexCheck_10" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">El rescate pendiente</h3></div>
+            <i id="indexCheck_10" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide23" onclick="if(document.getElementById('slide23') && document.getElementById('slide23').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } else { onCaseSelect(11); }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
+          <a href="#slide23" onclick="if(document.getElementById('slide23') && document.getElementById('slide23').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } window.onCaseSelect(11);" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-purple/50">
             <span class="font-title text-2xl text-neon-purple">#11</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm">Silencio antes del aplauso</h3>
-              <i id="indexCheck_11" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm">Silencio antes del aplauso</h3></div>
+            <i id="indexCheck_11" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
-          <a href="#slide25" onclick="if(document.getElementById('slide25') && document.getElementById('slide25').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } else { onCaseSelect(12); }" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-gold/50">
+          <a href="#slide25" onclick="if(document.getElementById('slide25') && document.getElementById('slide25').classList.contains('premium-locked')) { openModal('modalUnlock'); return false; } window.onCaseSelect(12);" class="glass-panel p-3 rounded-xl flex items-center gap-4 hover:border-neon-cyan hover:translate-x-1 transition-all border-neon-gold/50">
             <span class="font-title text-2xl text-neon-gold">#12</span>
-            <div class="flex-1 flex items-center justify-between">
-              <h3 class="font-bold text-sm text-neon-gold">Carrera de bicicletas (EXTRA)</h3>
-              <i id="indexCheck_12" class="fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)] hidden"></i>
-            </div>
+            <div class="flex-1"><h3 class="font-bold text-sm text-neon-gold">Carrera de bicicletas (EXTRA)</h3></div>
+            <i id="indexCheck_12" class="hidden fa-solid fa-circle-check text-emerald-400 text-lg drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]"></i>
           </a>
         </div>
-
       </div>
       
       <div class="w-full text-right mt-6">
@@ -515,7 +469,7 @@
     </div>
   </section>
 
-  <!-- Container for dynamically generated cases -->
+  <!-- Container for dynamically generated cases to keep file clean -->
   <div id="casesContainer"></div>
 
   <!-- Footer -->
@@ -523,31 +477,30 @@
     Diseñado & Creado por <strong class="text-neon-cyan">Ronald Moreno</strong> — Protección de Propiedad Intelectual ©
   </footer>
 
-  <!-- Firebase Realtime Database Integration & Application Mechanics -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
     import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
-    // Firebase configuration provided
     const firebaseConfig = {
-        apiKey: "AIzaSyDZW62ot6NSw_bN397olyBTljws7oa2GLc",
-        authDomain: "blackstoriesrealtime.firebaseapp.com",
-        projectId: "blackstoriesrealtime",
-        storageBucket: "blackstoriesrealtime.firebasestorage.app",
-        messagingSenderId: "1092765578252",
-        appId: "1:1092765578252:web:95139ecbb92e7a79906a29"
+      apiKey: "AIzaSyDZW62ot6NSw_bN397olyBTljws7oa2GLc",
+      authDomain: "blackstoriesrealtime.firebaseapp.com",
+      projectId: "blackstoriesrealtime",
+      storageBucket: "blackstoriesrealtime.firebasestorage.app",
+      messagingSenderId: "1092765578252",
+      appId: "1:1092765578252:web:95139ecbb92e7a79906a29"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Dynamic State Variables
-    window.currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
+    // --- State & Multiplayer Variables ---
+    window.currentRole = 'sherlock'; // 'sherlock' | 'detective'
     window.currentRoomCode = null;
     window.isSessionPaused = false;
-    let roomUnsubscribe = null;
+    window.holdTimer = null;
+    window.firebaseUnsubscribe = null;
 
-    // --- Cases Data ---
+    // --- Data for all 12 Cases ---
     const casesData = [
       { id: 1, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'ANA Y MARÍA', 
         case: 'Pedro y Juan están jugando fútbol en la calle. Entre jugada y jugada empiezan a discutir y debatir acaloradamente. En medio de la discusión, Pedro le pega durísimo al balón y este sale volando hacia una casa cercana. Juan le dice a Pedro que vaya por él, pero Pedro reclama y pregunta por qué tiene que ir él. Al final, Pedro termina cediendo y va a buscar el balón. Ingresa a la casa, sube al segundo piso y al entrar a la habitación encuentra a Ana y María muertas.', 
@@ -647,137 +600,58 @@
       }
     ];
 
-    // LocalStorage helper functions
+    // Helper functions for localStorage Solved Progress
     function isCaseSolved(id) {
       return localStorage.getItem(`caso_${id}_resuelto`) === 'true';
     }
 
-    function markCaseSolved(id) {
-      const wereSolved = casesData.filter(c => isCaseSolved(c.id)).length;
+    function setCaseSolved(id) {
       localStorage.setItem(`caso_${id}_resuelto`, 'true');
-      updateSolvedBadges();
-      
-      const newSolvedCount = casesData.filter(c => isCaseSolved(c.id)).length;
-
-      if (window.currentRole === 'sherlock' && window.currentRoomCode) {
-        publishRoomStateToFirebase();
-      }
-
-      if (newSolvedCount > wereSolved) {
-        checkStreakMilestone(newSolvedCount);
-      }
+      updateIndexCheckmarks();
+      checkStreakMilestones();
     }
 
-    function checkStreakMilestone(count) {
-      const streakTitle = document.getElementById('streakTitle');
-      const streakMessage = document.getElementById('streakMessage');
-      let trigger = false;
+    function updateIndexCheckmarks() {
+      casesData.forEach(c => {
+        const badge = document.getElementById(`indexCheck_${c.id}`);
+        const slideBadge = document.getElementById(`badgeSolved_${c.id}`);
+        if(isCaseSolved(c.id)) {
+          if(badge) badge.classList.remove('hidden');
+          if(slideBadge) slideBadge.classList.remove('hidden');
+        } else {
+          if(badge) badge.classList.add('hidden');
+          if(slideBadge) slideBadge.classList.add('hidden');
+        }
+      });
+    }
 
-      if (count === 3) {
-        streakTitle.innerText = "¡FELICITACIONES! VAS EN RACHA 🔥";
-        streakMessage.innerHTML = "¡Increíble deducción! Has resuelto <strong class='text-neon-cyan'>3 casos</strong>. Tu mente analítica está muy afilada. ¿Listos para el siguiente nivel de misterio?";
-        trigger = true;
-      } else if (count === 6) {
-        streakTitle.innerText = "¡RACHA IMPARABLE! 🕵️‍♂️✨";
-        streakMessage.innerHTML = "¡Extraordinario trabajo en equipo! Llevas <strong class='text-neon-pink'>6 casos resueltos</strong>. Ya formas parte de la élite de detectives de Black Stories.";
-        trigger = true;
-      } else if (count === 9) {
-        streakTitle.innerText = "¡MAESTRÍA ABSOLUTA! 🏆⚡";
-        streakMessage.innerHTML = "¡Impresionante! Has descifrado <strong class='text-neon-gold'>9 enigmas macabros</strong>. Muy pocos alcanzan este nivel de pensamiento lateral.";
-        trigger = true;
-      }
+    function checkStreakMilestones() {
+      let solvedCount = 0;
+      casesData.forEach(c => { if(isCaseSolved(c.id)) solvedCount++; });
 
-      if (trigger) {
+      const streakKey = `streak_notified_${solvedCount}`;
+      if((solvedCount === 3 || solvedCount === 6 || solvedCount === 9) && !localStorage.getItem(streakKey)) {
+        localStorage.setItem(streakKey, 'true');
+        
+        const titleEl = document.getElementById('streakTitle');
+        const msgEl = document.getElementById('streakMessage');
+        
+        if(solvedCount === 3) {
+          titleEl.innerText = "¡RACHA DE 3 CASOS RESUELTOS!";
+          msgEl.innerText = "¡Excelente deducción, detectives! Han descifrado 3 enigmas macabros. Su pensamiento lateral está más afilado que nunca.";
+        } else if(solvedCount === 6) {
+          titleEl.innerText = "¡IMPARABLES! 6 CASOS RESUELTOS";
+          msgEl.innerText = "¡Increíble desempeño! La mitad de los archivos del departamento han sido resueltos bajo su mando.";
+        } else if(solvedCount === 9) {
+          titleEl.innerText = "¡MAESTRÍA ABSOLUTA! 9 CASOS";
+          msgEl.innerText = "¡Son auténticos Sherlock Holmes! Han superado los enigmas más complejos del expediente.";
+        }
+
         openModal('modalStreakCelebration');
       }
     }
 
-    function updateSolvedBadges() {
-      casesData.forEach(c => {
-        const badgeEl = document.getElementById(`badgeSolved_${c.id}`);
-        const indexCheckEl = document.getElementById(`indexCheck_${c.id}`);
-        const isSolved = isCaseSolved(c.id);
-
-        if (badgeEl) {
-          if (isSolved) badgeEl.classList.remove('hidden');
-          else badgeEl.classList.add('hidden');
-        }
-
-        if (indexCheckEl) {
-          if (isSolved) indexCheckEl.classList.remove('hidden');
-          else indexCheckEl.classList.add('hidden');
-        }
-      });
-    }
-
-    // --- Firebase Realtime Database Sync Logic ---
-    function extractCaseIdFromHash(hashStr) {
-      if (!hashStr || !hashStr.startsWith('#slide')) return 1;
-      const num = parseInt(hashStr.replace('#slide', ''), 10);
-      if (isNaN(num) || num < 3) return 1;
-      return Math.floor((num - 1) / 2);
-    }
-
-    function publishRoomStateToFirebase() {
-      if (window.currentRole !== 'sherlock' || !window.currentRoomCode) return;
-
-      const activeHash = window.location.hash || '#slide1';
-      const caseNumber = extractCaseIdFromHash(activeHash);
-      const cleanRoomId = window.currentRoomCode.replace(/[^a-zA-Z0-9]/g, '');
-
-      set(ref(db, 'rooms/' + cleanRoomId), {
-        casoActivo: caseNumber,
-        estado: window.isSessionPaused ? 'lobby' : 'active',
-        activeHash: activeHash,
-        lastUpdated: Date.now()
-      }).catch(err => {
-        console.warn("Firebase Realtime DB update error:", err);
-      });
-    }
-
-    function connectDetectiveToFirebaseRoom(roomCode) {
-      if (roomUnsubscribe) roomUnsubscribe();
-
-      const cleanRoomId = roomCode.replace(/[^a-zA-Z0-9]/g, '');
-      const roomRef = ref(db, 'rooms/' + cleanRoomId);
-
-      roomUnsubscribe = onValue(roomRef, (snapshot) => {
-        if (window.currentRole !== 'detective') return;
-
-        const data = snapshot.val();
-        if (!data) return;
-
-        const overlay = document.getElementById('detectiveLobbyOverlay');
-        if (data.estado === 'lobby') {
-          overlay.classList.remove('hidden');
-          overlay.classList.add('flex');
-        } else {
-          overlay.classList.add('hidden');
-          overlay.classList.remove('flex');
-
-          let targetHash = data.activeHash;
-          if (!targetHash && data.casoActivo) {
-            targetHash = `#slide${data.casoActivo * 2 + 1}`;
-          }
-
-          if (targetHash && window.location.hash !== targetHash) {
-            window.location.hash = targetHash;
-          }
-        }
-      }, (err) => {
-        console.warn("Firebase Realtime DB read error:", err);
-      });
-    }
-
-    window.onCaseSelect = function(caseId) {
-      if (window.currentRole === 'sherlock') {
-        const targetHash = `#slide${caseId * 2 + 1}`;
-        window.location.hash = targetHash;
-        publishRoomStateToFirebase();
-      }
-    };
-
-    // --- Generate Cases HTML ---
+    // --- Generate HTML for Cases ---
     const container = document.getElementById('casesContainer');
     let htmlContent = '';
 
@@ -854,72 +728,111 @@
     });
     container.innerHTML = htmlContent;
 
-    // --- Press & Hold Mechanics ---
-    let holdStartTime = 0;
-    let holdInterval = null;
+    // --- Firebase Multiplayer Realtime Sync Functions ---
+    window.publishRoomStateToFirebase = function(hash, isPaused = false) {
+      if (window.currentRole === 'sherlock' && window.currentRoomCode) {
+        const roomRef = ref(db, 'rooms/' + window.currentRoomCode);
+        set(roomRef, {
+          activeHash: hash || window.location.hash || '#slide1',
+          isPaused: isPaused,
+          updatedAt: Date.now()
+        });
+      }
+    };
 
+    window.connectDetectiveToFirebaseRoom = function(roomCode) {
+      if (window.firebaseUnsubscribe) {
+        window.firebaseUnsubscribe();
+      }
+
+      const roomRef = ref(db, 'rooms/' + roomCode);
+      window.firebaseUnsubscribe = onValue(roomRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data && window.currentRole === 'detective') {
+          const lobbyOverlay = document.getElementById('detectiveLobbyOverlay');
+          
+          if (data.isPaused) {
+            if (lobbyOverlay) lobbyOverlay.classList.remove('hidden');
+          } else {
+            if (lobbyOverlay) lobbyOverlay.classList.add('hidden');
+            if (data.activeHash && window.location.hash !== data.activeHash) {
+              window.location.hash = data.activeHash;
+            }
+          }
+        }
+      });
+    };
+
+    // --- Hold to Reveal 3s Mechanics ---
     window.startHoldToReveal = function(e, targetSlideId) {
-      holdStartTime = Date.now();
+      e.preventDefault();
+      let startTime = Date.now();
       const circle = document.getElementById(`holdCircle_${targetSlideId}`);
-      if (holdInterval) clearInterval(holdInterval);
+      
+      if (circle) circle.style.strokeDashoffset = '63';
 
-      holdInterval = setInterval(() => {
-        const elapsed = Date.now() - holdStartTime;
-        const progress = Math.min(elapsed / 3000, 1.0);
+      window.holdInterval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        let progress = Math.min(elapsed / 3000, 1.0);
         if (circle) {
-          circle.style.strokeDashoffset = (63 - (63 * progress)).toString();
+          circle.style.strokeDashoffset = (63 * (1 - progress)).toString();
         }
 
         if (elapsed >= 3000) {
-          window.cancelHoldToReveal();
+          clearInterval(window.holdInterval);
+          window.holdInterval = null;
+          if (circle) circle.style.strokeDashoffset = '63';
+          
           window.location.hash = `#slide${targetSlideId}`;
-          if (window.currentRole === 'sherlock') {
-            publishRoomStateToFirebase();
-          }
+          window.publishRoomStateToFirebase(`#slide${targetSlideId}`, false);
         }
       }, 50);
     };
 
     window.cancelHoldToReveal = function() {
-      if (holdInterval) clearInterval(holdInterval);
-      holdInterval = null;
-      document.querySelectorAll('[id^="holdCircle_"]').forEach(c => {
-        c.style.strokeDashoffset = '63';
+      if (window.holdInterval) {
+        clearInterval(window.holdInterval);
+        window.holdInterval = null;
+      }
+      document.querySelectorAll('[id^="holdCircle_"]').forEach(circle => {
+        circle.style.strokeDashoffset = '63';
       });
     };
 
     window.registrarVictoriaDetective = function(caseId) {
-      markCaseSolved(caseId);
-      alert("¡Misterio sellado y resuelto! El check de victoria ha sido registrado.");
+      setCaseSolved(caseId);
+      alert(`¡Felicidades! Caso #${caseId} registrado como resuelto por el equipo.`);
     };
 
-    // --- Roles & Synchronized Lobby Control ---
+    // --- Modals Logic ---
+    window.openModal = function(id) { document.getElementById(id).classList.add('active'); };
+    window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
+
+    // --- Role Management ---
     window.setupRole = function(role) {
-      window.currentRole = role;
-      const btnStatus = document.getElementById('btnRoleStatus');
       const sherlockBox = document.getElementById('sherlockRoomBox');
       const detectiveBox = document.getElementById('detectiveRoomBox');
 
       if (role === 'sherlock') {
-        window.currentRoomCode = 'SHER-' + Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('sherlockRoomCode').innerText = window.currentRoomCode;
-        btnStatus.innerHTML = `<i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK: ${window.currentRoomCode}`;
+        window.currentRole = 'sherlock';
+        document.body.classList.remove('role-detective');
         sherlockBox.classList.remove('hidden');
         detectiveBox.classList.add('hidden');
-        document.body.classList.remove('role-detective');
-        
-        publishRoomStateToFirebase();
-      } else if (role === 'detective') {
+
+        if (!window.currentRoomCode) {
+          const randomCode = 'SHER-' + Math.floor(1000 + Math.random() * 9000);
+          window.currentRoomCode = randomCode;
+          document.getElementById('sherlockRoomCode').innerText = randomCode;
+        }
+
+        document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK: ${window.currentRoomCode}`;
+        updateRoleDOMVisibility();
+        window.publishRoomStateToFirebase(window.location.hash || '#slide1', window.isSessionPaused);
+
+      } else {
+        window.currentRole = 'detective';
         sherlockBox.classList.add('hidden');
         detectiveBox.classList.remove('hidden');
-      }
-      updateRoleDOMVisibility();
-    };
-
-    window.copyRoomCode = function() {
-      if (window.currentRoomCode) {
-        navigator.clipboard.writeText(window.currentRoomCode);
-        alert("Código de sala copiado: " + window.currentRoomCode);
       }
     };
 
@@ -945,49 +858,47 @@
     window.toggleSessionPause = function() {
       window.isSessionPaused = !window.isSessionPaused;
       const btn = document.getElementById('btnTogglePauseSession');
-
       if (window.isSessionPaused) {
-        btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> REANUDAR SESIÓN EN VIVO`;
         btn.classList.add('bg-neon-pink', 'text-white');
+        btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> REANUDAR SESIÓN EN VIVO`;
       } else {
-        btn.innerHTML = `<i class="fa-solid fa-pause mr-1"></i> PAUSAR SESIÓN (LOBBY DE ESPERA)`;
         btn.classList.remove('bg-neon-pink', 'text-white');
+        btn.innerHTML = `<i class="fa-solid fa-pause mr-1"></i> PAUSAR SESIÓN (LOBBY DE ESPERA)`;
       }
+      window.publishRoomStateToFirebase(window.location.hash, window.isSessionPaused);
+    };
 
-      publishRoomStateToFirebase();
+    window.copyRoomCode = function() {
+      if (window.currentRoomCode) {
+        navigator.clipboard.writeText(window.currentRoomCode);
+        alert(`Código de sala copiado: ${window.currentRoomCode}`);
+      }
     };
 
     function updateRoleDOMVisibility() {
-      const isDetective = (window.currentRole === 'detective');
-      document.querySelectorAll('.sherlock-only').forEach(el => {
-        if (isDetective) {
-          el.style.display = 'none';
-        } else {
-          el.style.display = '';
-        }
-      });
+      if (window.currentRole === 'detective') {
+        document.body.classList.add('role-detective');
+      } else {
+        document.body.classList.remove('role-detective');
+      }
     }
 
+    window.onCaseSelect = function(caseId) {
+      let targetSlideId = caseId * 2 + 1;
+      window.publishRoomStateToFirebase(`#slide${targetSlideId}`, false);
+    };
+
+    // Broadcast hash changes for Sherlock
     window.addEventListener('hashchange', () => {
       if (window.currentRole === 'sherlock') {
-        publishRoomStateToFirebase();
+        window.publishRoomStateToFirebase(window.location.hash, window.isSessionPaused);
       }
     });
 
-    // --- Global Modal UI Handlers ---
-    window.openModal = function(id) { 
-      const el = document.getElementById(id);
-      if (el) el.classList.add('active'); 
-    };
-    window.closeModal = function(id) { 
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('active'); 
-    };
-
-    // --- Unlock Key Handler ---
+    // --- Unlock Logic ---
     window.checkCode = function() {
       const code = document.getElementById('unlockCode').value.trim().toLowerCase();
-      if(code === 'ronin18') {
+      if (code === 'ronin18') {
         document.querySelectorAll('.premium-slide').forEach(el => el.classList.remove('premium-locked'));
         closeModal('modalUnlock');
         alert("¡Código Aceptado! Has desbloqueado los misterios máximos.");
@@ -996,7 +907,7 @@
       }
     };
 
-    // --- Language Translation Toggle ---
+    // --- Translation Custom Button ---
     window.toggleLanguage = function() {
       const teCombo = document.querySelector('.goog-te-combo');
       if (teCombo) {
@@ -1005,7 +916,7 @@
       }
     };
 
-    // --- Dynamic Tone.js Rain & Weather FX ---
+    // --- Dynamic Audio & Rain System ---
     let audioStarted = false;
     let rainLevel = 1;
     let rainTimer = null;
@@ -1023,7 +934,7 @@
     resizeCanvas();
 
     window.initAudio = function() {
-      if(audioStarted) return;
+      if (audioStarted) return;
       
       Tone.start().then(() => {
         audioStarted = true;
@@ -1042,13 +953,13 @@
     };
 
     function increaseStorm() {
-      if(rainLevel < 10) {
+      if (rainLevel < 10) {
         rainLevel++;
         document.getElementById('btnToggleAudio').innerHTML = `<i class="fa-solid fa-volume-high mr-1 text-neon-cyan"></i> Lloviendo (Lvl ${rainLevel})`;
         
         const targetVol = -30 + (rainLevel * 2.5);
         let targetFreq = 600 + (rainLevel * 300);
-        if(rainLevel >= 5) targetFreq += (rainLevel - 4) * 800;
+        if (rainLevel >= 5) targetFreq += (rainLevel - 4) * 800;
         
         noiseSynth.volume.rampTo(targetVol, 2);
         filter.frequency.rampTo(targetFreq, 2);
@@ -1060,7 +971,7 @@
     function updateRainParticles() {
       const baseCount = 50 + (rainLevel * 40);
       particles = [];
-      for(let i=0; i<baseCount; i++) {
+      for (let i = 0; i < baseCount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
@@ -1074,7 +985,7 @@
       const crackSvg = document.getElementById('crackSvg');
       const eclipse = document.getElementById('eclipseLayer');
       
-      if(rainLevel >= 5 && rainLevel <= 9) {
+      if (rainLevel >= 5 && rainLevel <= 9) {
         crackSvg.style.opacity = Math.min((rainLevel - 4) * 0.25, 1.0).toString();
       } else if (rainLevel === 10) {
         crackSvg.style.opacity = '1';
@@ -1088,7 +999,7 @@
       
       particles.forEach(p => {
         ctx.beginPath();
-        if(p.isHail) {
+        if (p.isHail) {
           ctx.arc(p.x, p.y, p.thickness + 1, 0, Math.PI*2);
           ctx.fillStyle = 'rgba(255,255,255,0.9)';
           ctx.fill();
@@ -1103,7 +1014,7 @@
         p.y += p.v;
         p.x += p.v * 0.2;
         
-        if(p.y > canvas.height) {
+        if (p.y > canvas.height) {
           p.y = -20;
           p.x = Math.random() * canvas.width;
         }
@@ -1111,10 +1022,10 @@
       requestAnimationFrame(drawRain);
     }
 
-    // Initialize local badges on page load
-    window.addEventListener('load', () => {
-      updateSolvedBadges();
-    });
+    // Initialize UI state on load
+    window.onload = function() {
+      updateIndexCheckmarks();
+    };
   </script>
 </body>
 </html>
