@@ -1002,7 +1002,8 @@
     // Intercept click attempts on cases/buttons for detectives
     document.addEventListener('click', function(e) {
       if (window.currentRole === 'detective') {
-        if (!e.target.closest('.whitelist-control')) {
+        // Ensure ambient audio button is explicitly allowed alongside other whitelist controls
+        if (!e.target.closest('.whitelist-control') && !e.target.closest('#btnToggleAudio')) {
           e.preventDefault();
           e.stopPropagation();
           return false;
