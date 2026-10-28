@@ -19,51 +19,6 @@
   <!-- Tone.js for Audio Synthesis -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
 
-  <!-- Firebase SDKs for Real-time Cloud Synchronization -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Global Firebase Config & Initialization
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-      apiKey: "demo-key",
-      authDomain: "demo.firebaseapp.com",
-      projectId: "demo-project",
-      storageBucket: "demo.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:123456"
-    };
-
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'black-stories-game';
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Window global bindings for game scripts
-    window.db = db;
-    window.appId = appId;
-    window.doc = doc;
-    window.setDoc = setDoc;
-    window.onSnapshot = onSnapshot;
-
-    // Authenticate user anonymously or with custom token
-    async function initAuth() {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-        window.firebaseUserReady = true;
-      } catch (e) {
-        console.warn("Firebase Auth fallback:", e);
-        window.firebaseUserReady = true;
-      }
-    }
-    initAuth();
-  </script>
-
   <script>
     tailwind.config = {
       theme: {
@@ -569,6 +524,11 @@
   </footer>
 
   <script>
+    // --- JSONBin.io Cloud Relay Setup ---
+    const JSONBIN_MASTER_KEY = "$2a$10$demoMasterKeyForTestingPurposeOnly"; // Public relay endpoint
+    const JSONBIN_BIN_ID = "66f30a91e410157d3f548a2b"; 
+    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
     // --- Data for all 12 Cases ---
     const casesData = [
       { id: 1, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'ANA Y MARÍA', 
@@ -673,7 +633,7 @@
     let currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
     let currentRoomCode = null;
     let isSessionPaused = false;
-    let firestoreUnsubscribe = null;
+    let syncInterval = null;
 
     // Helper to get local solved state
     function isCaseSolved(id) {
@@ -687,7 +647,7 @@
       
       const newSolvedCount = casesData.filter(c => isCaseSolved(c.id)).length;
 
-      // Broadcast victory if Sherlock
+      // Broadcast room update if Sherlock
       if (currentRole === 'sherlock' && currentRoomCode) {
         publishRoomStateToCloud();
       }
@@ -739,41 +699,47 @@
       });
     }
 
-    // --- Firebase Cloud Sync Functions ---
+    // --- JSONBin.io Cloud Relay Functions ---
     async function publishRoomStateToCloud() {
       if (currentRole !== 'sherlock' || !currentRoomCode) return;
-      if (!window.db || !window.doc || !window.setDoc) return;
 
-      const roomDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', currentRoomCode);
       const activeHash = window.location.hash || '#slide1';
+      const payload = {
+        roomCode: currentRoomCode,
+        activeHash: activeHash,
+        isPaused: isSessionPaused,
+        lastUpdated: Date.now()
+      };
 
       try {
-        await window.setDoc(roomDocRef, {
-          roomCode: currentRoomCode,
-          activeHash: activeHash,
-          isPaused: isSessionPaused,
-          lastUpdated: Date.now()
-        }, { merge: true });
+        await fetch(JSONBIN_URL, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_MASTER_KEY
+          },
+          body: JSON.stringify(payload)
+        });
       } catch (err) {
-        console.warn("Cloud publish error:", err);
+        console.warn("Cloud relay publish error:", err);
       }
     }
 
     function listenToRoomInCloud(code) {
-      if (firestoreUnsubscribe) {
-        firestoreUnsubscribe();
-        firestoreUnsubscribe = null;
-      }
+      if (syncInterval) clearInterval(syncInterval);
 
-      if (!window.db || !window.doc || !window.onSnapshot) return;
+      syncInterval = setInterval(async () => {
+        if (currentRole !== 'detective') return;
 
-      const roomDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'rooms', code);
-      
-      firestoreUnsubscribe = window.onSnapshot(roomDocRef, (snapshot) => {
-        if (!snapshot.exists()) return;
-        const data = snapshot.data();
+        try {
+          const res = await fetch(`${JSONBIN_URL}/latest`, {
+            headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
+          });
+          const json = await res.json();
+          const data = json.record;
 
-        if (currentRole === 'detective') {
+          if (!data || data.roomCode !== code) return;
+
           const overlay = document.getElementById('detectiveLobbyOverlay');
           if (data.isPaused) {
             overlay.classList.remove('hidden');
@@ -786,10 +752,10 @@
               window.location.hash = data.activeHash;
             }
           }
+        } catch (err) {
+          console.warn("Cloud relay fetch error:", err);
         }
-      }, (error) => {
-        console.warn("Cloud subscription error:", error);
-      });
+      }, 2500); // Poll cloud relay every 2.5s
     }
 
     function onCaseSelect(caseId) {
@@ -938,6 +904,13 @@
       updateRoleDOMVisibility();
     }
 
+    function copyRoomCode() {
+      if (currentRoomCode) {
+        navigator.clipboard.writeText(currentRoomCode);
+        alert("Código de sala copiado: " + currentRoomCode);
+      }
+    }
+
     function joinRoom() {
       const codeInput = document.getElementById('inputJoinCode');
       const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
@@ -953,7 +926,7 @@
       closeModal('modalRoleSelector');
       updateRoleDOMVisibility();
 
-      // Listen for Sherlock's updates on Firebase
+      // Listen for Sherlock's updates on JSONBin.io cloud relay
       listenToRoomInCloud(currentRoomCode);
     }
 
