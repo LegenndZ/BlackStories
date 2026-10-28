@@ -523,13 +523,31 @@
     Diseñado & Creado por <strong class="text-neon-cyan">Ronald Moreno</strong> — Protección de Propiedad Intelectual ©
   </footer>
 
-  <script>
-    // --- JSONBin.io Cloud Relay Setup ---
-    const JSONBIN_MASTER_KEY = "$2a$10$demoMasterKeyForTestingPurposeOnly"; // Public relay endpoint
-    const JSONBIN_BIN_ID = "66f30a91e410157d3f548a2b"; 
-    const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+  <!-- Firebase Realtime Database Integration & Application Mechanics -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/13.1.0/firebase-database.js";
 
-    // --- Data for all 12 Cases ---
+    // Firebase configuration provided
+    const firebaseConfig = {
+        apiKey: "AIzaSyDZW62ot6NSw_bN397olyBTljws7oa2GLc",
+        authDomain: "blackstoriesrealtime.firebaseapp.com",
+        projectId: "blackstoriesrealtime",
+        storageBucket: "blackstoriesrealtime.firebasestorage.app",
+        messagingSenderId: "1092765578252",
+        appId: "1:1092765578252:web:95139ecbb92e7a79906a29"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Dynamic State Variables
+    window.currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
+    window.currentRoomCode = null;
+    window.isSessionPaused = false;
+    let roomUnsubscribe = null;
+
+    // --- Cases Data ---
     const casesData = [
       { id: 1, level: 1, lvlText: 'NIVEL 1', lvlColor: 'neon-pink', title: 'ANA Y MARÍA', 
         case: 'Pedro y Juan están jugando fútbol en la calle. Entre jugada y jugada empiezan a discutir y debatir acaloradamente. En medio de la discusión, Pedro le pega durísimo al balón y este sale volando hacia una casa cercana. Juan le dice a Pedro que vaya por él, pero Pedro reclama y pregunta por qué tiene que ir él. Al final, Pedro termina cediendo y va a buscar el balón. Ingresa a la casa, sube al segundo piso y al entrar a la habitación encuentra a Ana y María muertas.', 
@@ -629,13 +647,7 @@
       }
     ];
 
-    // --- Dynamic State Variables ---
-    let currentRole = 'solo'; // 'solo', 'sherlock', 'detective'
-    let currentRoomCode = null;
-    let isSessionPaused = false;
-    let syncInterval = null;
-
-    // Helper to get local solved state
+    // LocalStorage helper functions
     function isCaseSolved(id) {
       return localStorage.getItem(`caso_${id}_resuelto`) === 'true';
     }
@@ -647,9 +659,8 @@
       
       const newSolvedCount = casesData.filter(c => isCaseSolved(c.id)).length;
 
-      // Broadcast room update if Sherlock
-      if (currentRole === 'sherlock' && currentRoomCode) {
-        publishRoomStateToCloud();
+      if (window.currentRole === 'sherlock' && window.currentRoomCode) {
+        publishRoomStateToFirebase();
       }
 
       if (newSolvedCount > wereSolved) {
@@ -699,7 +710,7 @@
       });
     }
 
-    // --- JSONBin.io Cloud Relay Functions ---
+    // --- Firebase Realtime Database Sync Logic ---
     function extractCaseIdFromHash(hashStr) {
       if (!hashStr || !hashStr.startsWith('#slide')) return 1;
       const num = parseInt(hashStr.replace('#slide', ''), 10);
@@ -707,82 +718,66 @@
       return Math.floor((num - 1) / 2);
     }
 
-    async function publishRoomStateToCloud() {
-      if (currentRole !== 'sherlock' || !currentRoomCode) return;
+    function publishRoomStateToFirebase() {
+      if (window.currentRole !== 'sherlock' || !window.currentRoomCode) return;
 
       const activeHash = window.location.hash || '#slide1';
       const caseNumber = extractCaseIdFromHash(activeHash);
+      const cleanRoomId = window.currentRoomCode.replace(/[^a-zA-Z0-9]/g, '');
 
-      const payload = {
-        sala: currentRoomCode,
+      set(ref(db, 'rooms/' + cleanRoomId), {
         casoActivo: caseNumber,
-        estado: isSessionPaused ? 'lobby' : 'active',
+        estado: window.isSessionPaused ? 'lobby' : 'active',
         activeHash: activeHash,
         lastUpdated: Date.now()
-      };
-
-      try {
-        await fetch(JSONBIN_URL, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Master-Key': JSONBIN_MASTER_KEY
-          },
-          body: JSON.stringify(payload)
-        });
-      } catch (err) {
-        console.warn("Cloud relay publish error:", err);
-      }
+      }).catch(err => {
+        console.warn("Firebase Realtime DB update error:", err);
+      });
     }
 
-    function listenToRoomInCloud(code) {
-      if (syncInterval) clearInterval(syncInterval);
+    function connectDetectiveToFirebaseRoom(roomCode) {
+      if (roomUnsubscribe) roomUnsubscribe();
 
-      // Polling every 2 seconds as requested for realtime slave response
-      syncInterval = setInterval(async () => {
-        if (currentRole !== 'detective') return;
+      const cleanRoomId = roomCode.replace(/[^a-zA-Z0-9]/g, '');
+      const roomRef = ref(db, 'rooms/' + cleanRoomId);
 
-        try {
-          const res = await fetch(`${JSONBIN_URL}/latest`, {
-            headers: { 'X-Master-Key': JSONBIN_MASTER_KEY }
-          });
-          const json = await res.json();
-          const data = json.record;
+      roomUnsubscribe = onValue(roomRef, (snapshot) => {
+        if (window.currentRole !== 'detective') return;
 
-          if (!data || data.sala !== code) return;
+        const data = snapshot.val();
+        if (!data) return;
 
-          const overlay = document.getElementById('detectiveLobbyOverlay');
-          if (data.estado === 'lobby') {
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-          } else {
-            overlay.classList.add('hidden');
-            overlay.classList.remove('flex');
+        const overlay = document.getElementById('detectiveLobbyOverlay');
+        if (data.estado === 'lobby') {
+          overlay.classList.remove('hidden');
+          overlay.classList.add('flex');
+        } else {
+          overlay.classList.add('hidden');
+          overlay.classList.remove('flex');
 
-            let targetHash = data.activeHash;
-            if (!targetHash && data.casoActivo) {
-              targetHash = `#slide${data.casoActivo * 2 + 1}`;
-            }
-
-            if (targetHash && window.location.hash !== targetHash) {
-              window.location.hash = targetHash;
-            }
+          let targetHash = data.activeHash;
+          if (!targetHash && data.casoActivo) {
+            targetHash = `#slide${data.casoActivo * 2 + 1}`;
           }
-        } catch (err) {
-          console.warn("Cloud relay fetch error:", err);
+
+          if (targetHash && window.location.hash !== targetHash) {
+            window.location.hash = targetHash;
+          }
         }
-      }, 2000);
+      }, (err) => {
+        console.warn("Firebase Realtime DB read error:", err);
+      });
     }
 
-    function onCaseSelect(caseId) {
-      if (currentRole === 'sherlock') {
+    window.onCaseSelect = function(caseId) {
+      if (window.currentRole === 'sherlock') {
         const targetHash = `#slide${caseId * 2 + 1}`;
         window.location.hash = targetHash;
-        publishRoomStateToCloud();
+        publishRoomStateToFirebase();
       }
-    }
+    };
 
-    // --- Generate HTML for Cases ---
+    // --- Generate Cases HTML ---
     const container = document.getElementById('casesContainer');
     let htmlContent = '';
 
@@ -817,11 +812,11 @@
               <div class="sherlock-only">
                 <div class="relative inline-block">
                   <button type="button" 
-                     onmousedown="startHoldToReveal(event, ${slideSolId})" 
-                     onmouseup="cancelHoldToReveal()" 
-                     onmouseleave="cancelHoldToReveal()"
-                     ontouchstart="startHoldToReveal(event, ${slideSolId})" 
-                     ontouchend="cancelHoldToReveal()"
+                     onmousedown="window.startHoldToReveal(event, ${slideSolId})" 
+                     onmouseup="window.cancelHoldToReveal()" 
+                     onmouseleave="window.cancelHoldToReveal()"
+                     ontouchstart="window.startHoldToReveal(event, ${slideSolId})" 
+                     ontouchend="window.cancelHoldToReveal()"
                      class="inline-flex items-center gap-2 text-${c.lvlColor} font-bold hover:text-white transition-colors glass-panel px-6 py-3 rounded-xl border border-${c.lvlColor}/40">
                     <span>MANTÉN 3 SEG PARA REVELAR</span>
                     <svg class="w-6 h-6 transform -rotate-90">
@@ -835,7 +830,7 @@
           </div>
         </section>
 
-        <!-- SOLUCION ${c.id} (Solo visible por Sherlock o en Solo Mode) -->
+        <!-- SOLUCION ${c.id} (Only for Sherlock or Solo Mode) -->
         <section id="slide${slideSolId}" class="slide-section items-center justify-center ${premiumClass} sherlock-only-slide">
           <img src="${c.imgSol}" class="bg-cover-image" alt="Solution background">
           <div class="bg-overlay" style="background: linear-gradient(90deg, rgba(5,5,8,0.95) 0%, rgba(5,5,8,0.6) 100%);"></div>
@@ -845,7 +840,7 @@
               <h2 class="font-title text-5xl sm:text-6xl text-white mb-6 leading-none">${c.solTitle}</h2>
               <p class="text-lg text-gray-200 leading-relaxed mb-6">${c.solution}</p>
               
-              <button onclick="registrarVictoriaDetective(${c.id})" class="bg-green-500/20 border border-green-500 text-green-400 hover:bg-green-500 hover:text-black font-bold px-6 py-3 rounded-xl transition-all">
+              <button onclick="window.registrarVictoriaDetective(${c.id})" class="bg-green-500/20 border border-green-500 text-green-400 hover:bg-green-500 hover:text-black font-bold px-6 py-3 rounded-xl transition-all">
                 <i class="fa-solid fa-trophy mr-2"></i> MARCAR COMO RESUELTO POR DETECTIVES
               </button>
             </div>
@@ -859,11 +854,11 @@
     });
     container.innerHTML = htmlContent;
 
-    // --- Press & Hold 3 Seconds Mechanism ---
+    // --- Press & Hold Mechanics ---
     let holdStartTime = 0;
     let holdInterval = null;
 
-    function startHoldToReveal(e, targetSlideId) {
+    window.startHoldToReveal = function(e, targetSlideId) {
       holdStartTime = Date.now();
       const circle = document.getElementById(`holdCircle_${targetSlideId}`);
       if (holdInterval) clearInterval(holdInterval);
@@ -876,58 +871,57 @@
         }
 
         if (elapsed >= 3000) {
-          cancelHoldToReveal();
+          window.cancelHoldToReveal();
           window.location.hash = `#slide${targetSlideId}`;
-          if (currentRole === 'sherlock') publishRoomStateToCloud();
+          if (window.currentRole === 'sherlock') publishRoomStateToFirebase();
         }
       }, 50);
-    }
+    };
 
-    function cancelHoldToReveal() {
+    window.cancelHoldToReveal = function() {
       if (holdInterval) clearInterval(holdInterval);
       holdInterval = null;
       document.querySelectorAll('[id^="holdCircle_"]').forEach(c => {
         c.style.strokeDashoffset = '63';
       });
-    }
+    };
 
-    function registrarVictoriaDetective(caseId) {
+    window.registrarVictoriaDetective = function(caseId) {
       markCaseSolved(caseId);
       alert("¡Misterio sellado y resuelto! El check de victoria ha sido registrado.");
-    }
+    };
 
-    // --- Role & Multiplayer Synchronization ---
-    function setupRole(role) {
-      currentRole = role;
+    // --- Roles & Synchronized Lobby Control ---
+    window.setupRole = function(role) {
+      window.currentRole = role;
       const btnStatus = document.getElementById('btnRoleStatus');
       const sherlockBox = document.getElementById('sherlockRoomBox');
       const detectiveBox = document.getElementById('detectiveRoomBox');
 
       if (role === 'sherlock') {
-        currentRoomCode = 'SHER-' + Math.floor(1000 + Math.random() * 9000);
-        document.getElementById('sherlockRoomCode').innerText = currentRoomCode;
-        btnStatus.innerHTML = `<i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK: ${currentRoomCode}`;
+        window.currentRoomCode = 'SHER-' + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('sherlockRoomCode').innerText = window.currentRoomCode;
+        btnStatus.innerHTML = `<i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK: ${window.currentRoomCode}`;
         sherlockBox.classList.remove('hidden');
         detectiveBox.classList.add('hidden');
         document.body.classList.remove('role-detective');
         
-        // Publish initially
-        publishRoomStateToCloud();
+        publishRoomStateToFirebase();
       } else if (role === 'detective') {
         sherlockBox.classList.add('hidden');
         detectiveBox.classList.remove('hidden');
       }
       updateRoleDOMVisibility();
-    }
+    };
 
-    function copyRoomCode() {
-      if (currentRoomCode) {
-        navigator.clipboard.writeText(currentRoomCode);
-        alert("Código de sala copiado: " + currentRoomCode);
+    window.copyRoomCode = function() {
+      if (window.currentRoomCode) {
+        navigator.clipboard.writeText(window.currentRoomCode);
+        alert("Código de sala copiado: " + window.currentRoomCode);
       }
-    }
+    };
 
-    function joinRoom() {
+    window.joinRoom = function() {
       const codeInput = document.getElementById('inputJoinCode');
       const code = codeInput ? codeInput.value.trim().toUpperCase() : '';
       if (!code) {
@@ -935,22 +929,22 @@
         return;
       }
       
-      currentRoomCode = code;
-      currentRole = 'detective';
-      document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVE: ${currentRoomCode}`;
+      window.currentRoomCode = code;
+      window.currentRole = 'detective';
+      document.getElementById('btnRoleStatus').innerHTML = `<i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVE: ${window.currentRoomCode}`;
       document.body.classList.add('role-detective');
       closeModal('modalRoleSelector');
       updateRoleDOMVisibility();
 
-      // Listen for Sherlock's updates on JSONBin.io cloud relay
-      listenToRoomInCloud(currentRoomCode);
-    }
+      // Connect to Firebase Realtime Database
+      connectDetectiveToFirebaseRoom(window.currentRoomCode);
+    };
 
-    function toggleSessionPause() {
-      isSessionPaused = !isSessionPaused;
+    window.toggleSessionPause = function() {
+      window.isSessionPaused = !window.isSessionPaused;
       const btn = document.getElementById('btnTogglePauseSession');
 
-      if (isSessionPaused) {
+      if (window.isSessionPaused) {
         btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i> REANUDAR SESIÓN EN VIVO`;
         btn.classList.add('bg-neon-pink', 'text-white');
       } else {
@@ -958,11 +952,11 @@
         btn.classList.remove('bg-neon-pink', 'text-white');
       }
 
-      publishRoomStateToCloud();
-    }
+      publishRoomStateToFirebase();
+    };
 
     function updateRoleDOMVisibility() {
-      const isDetective = (currentRole === 'detective');
+      const isDetective = (window.currentRole === 'detective');
       document.querySelectorAll('.sherlock-only, .sherlock-only-slide').forEach(el => {
         if (isDetective) {
           el.style.display = 'none';
@@ -973,23 +967,23 @@
     }
 
     window.addEventListener('hashchange', () => {
-      if (currentRole === 'sherlock') {
-        publishRoomStateToCloud();
+      if (window.currentRole === 'sherlock') {
+        publishRoomStateToFirebase();
       }
     });
 
-    // --- Modals Logic ---
-    function openModal(id) { 
+    // --- Global Modal UI Handlers ---
+    window.openModal = function(id) { 
       const el = document.getElementById(id);
       if (el) el.classList.add('active'); 
-    }
-    function closeModal(id) { 
+    };
+    window.closeModal = function(id) { 
       const el = document.getElementById(id);
       if (el) el.classList.remove('active'); 
-    }
+    };
 
-    // --- Unlock Logic ---
-    function checkCode() {
+    // --- Unlock Key Handler ---
+    window.checkCode = function() {
       const code = document.getElementById('unlockCode').value.trim().toLowerCase();
       if(code === 'ronin18') {
         document.querySelectorAll('.premium-slide').forEach(el => el.classList.remove('premium-locked'));
@@ -998,24 +992,23 @@
       } else {
         document.getElementById('unlockError').classList.remove('hidden');
       }
-    }
+    };
 
-    // --- Translation Custom Button ---
-    function toggleLanguage() {
+    // --- Language Translation Toggle ---
+    window.toggleLanguage = function() {
       const teCombo = document.querySelector('.goog-te-combo');
       if (teCombo) {
         teCombo.value = teCombo.value === 'en' ? 'es' : 'en';
         teCombo.dispatchEvent(new Event('change'));
       }
-    }
+    };
 
-    // --- Dynamic Audio & Rain System ---
+    // --- Dynamic Tone.js Rain & Weather FX ---
     let audioStarted = false;
     let rainLevel = 1;
     let rainTimer = null;
     let noiseSynth, filter;
     
-    // Canvas setup
     const canvas = document.getElementById('rainCanvas');
     const ctx = canvas.getContext('2d');
     let particles = [];
@@ -1027,7 +1020,7 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    function initAudio() {
+    window.initAudio = function() {
       if(audioStarted) return;
       
       Tone.start().then(() => {
@@ -1044,7 +1037,7 @@
         
         rainTimer = setInterval(increaseStorm, 180000);
       });
-    }
+    };
 
     function increaseStorm() {
       if(rainLevel < 10) {
@@ -1116,10 +1109,10 @@
       requestAnimationFrame(drawRain);
     }
 
-    // Initialize badges on load
-    window.onload = function() {
+    // Initialize local badges on page load
+    window.addEventListener('load', () => {
       updateSolvedBadges();
-    };
+    });
   </script>
 </body>
 </html>
