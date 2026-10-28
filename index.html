@@ -700,14 +700,24 @@
     }
 
     // --- JSONBin.io Cloud Relay Functions ---
+    function extractCaseIdFromHash(hashStr) {
+      if (!hashStr || !hashStr.startsWith('#slide')) return 1;
+      const num = parseInt(hashStr.replace('#slide', ''), 10);
+      if (isNaN(num) || num < 3) return 1;
+      return Math.floor((num - 1) / 2);
+    }
+
     async function publishRoomStateToCloud() {
       if (currentRole !== 'sherlock' || !currentRoomCode) return;
 
       const activeHash = window.location.hash || '#slide1';
+      const caseNumber = extractCaseIdFromHash(activeHash);
+
       const payload = {
-        roomCode: currentRoomCode,
+        sala: currentRoomCode,
+        casoActivo: caseNumber,
+        estado: isSessionPaused ? 'lobby' : 'active',
         activeHash: activeHash,
-        isPaused: isSessionPaused,
         lastUpdated: Date.now()
       };
 
@@ -728,6 +738,7 @@
     function listenToRoomInCloud(code) {
       if (syncInterval) clearInterval(syncInterval);
 
+      // Polling every 2 seconds as requested for realtime slave response
       syncInterval = setInterval(async () => {
         if (currentRole !== 'detective') return;
 
@@ -738,24 +749,29 @@
           const json = await res.json();
           const data = json.record;
 
-          if (!data || data.roomCode !== code) return;
+          if (!data || data.sala !== code) return;
 
           const overlay = document.getElementById('detectiveLobbyOverlay');
-          if (data.isPaused) {
+          if (data.estado === 'lobby') {
             overlay.classList.remove('hidden');
             overlay.classList.add('flex');
           } else {
             overlay.classList.add('hidden');
             overlay.classList.remove('flex');
 
-            if (data.activeHash && window.location.hash !== data.activeHash) {
-              window.location.hash = data.activeHash;
+            let targetHash = data.activeHash;
+            if (!targetHash && data.casoActivo) {
+              targetHash = `#slide${data.casoActivo * 2 + 1}`;
+            }
+
+            if (targetHash && window.location.hash !== targetHash) {
+              window.location.hash = targetHash;
             }
           }
         } catch (err) {
           console.warn("Cloud relay fetch error:", err);
         }
-      }, 2500); // Poll cloud relay every 2.5s
+      }, 2000);
     }
 
     function onCaseSelect(caseId) {
