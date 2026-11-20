@@ -1,4 +1,4 @@
-const CACHE_NAME = 'blackstories-pwa-v2';
+const CACHE_NAME = 'blackstories-pwa-v5';
 
 const PRECACHE_URLS = [
   './',
@@ -8,7 +8,13 @@ const PRECACHE_URLS = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
-  './icons/favicon-32.png'
+  './icons/favicon-32.png',
+  './assets/tutorial/scene1-hook.jpg',
+  './assets/tutorial/scene2-modes.jpg',
+  './assets/tutorial/scene3-bar.jpg',
+  './assets/tutorial/scene4-interrogation.jpg',
+  './assets/tutorial/scene5-solved.jpg',
+  './assets/tutorial/sherlock-voz.wav'
 ];
 
 self.addEventListener('install', (event) => {

@@ -176,6 +176,185 @@
     /* Google Translate fix */
     .goog-te-banner-frame { display: none !important; }
     body { top: 0px !important; }
+
+    /* Commercial Noir Neon Tutorial Video Player */
+    .tutorial-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 225px;
+      background: #050508;
+      border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(0, 240, 255, 0.35);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.16), 0 0 60px rgba(255, 0, 85, 0.12), inset 0 0 30px rgba(0, 0, 0, 0.85);
+    }
+
+    @media (min-width: 640px) {
+      .tutorial-stage {
+        min-height: 310px;
+      }
+    }
+
+    .tutorial-bg-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      will-change: transform, opacity;
+      pointer-events: none;
+    }
+
+    .tutorial-bg-img.active {
+      opacity: 0.85;
+    }
+
+    .tutorial-stage.is-playing .tutorial-bg-img.kb-zoom-in.active {
+      animation: kbZoomIn 9s ease-out forwards;
+    }
+    .tutorial-stage.is-playing .tutorial-bg-img.kb-pan-right.active {
+      animation: kbPanRight 9s ease-out forwards;
+    }
+    .tutorial-stage.is-playing .tutorial-bg-img.kb-pan-left.active {
+      animation: kbPanLeft 10s ease-out forwards;
+    }
+    .tutorial-stage.is-playing .tutorial-bg-img.kb-zoom-out.active {
+      animation: kbZoomOut 14s ease-out forwards;
+    }
+
+    @keyframes kbZoomIn {
+      from { transform: scale(1.0) translate(0, 0); }
+      to { transform: scale(1.13) translate(-1.5%, -1%); }
+    }
+    @keyframes kbPanRight {
+      from { transform: scale(1.1) translate(-2.5%, 0); }
+      to { transform: scale(1.14) translate(2%, -1.5%); }
+    }
+    @keyframes kbPanLeft {
+      from { transform: scale(1.12) translate(2%, -1%); }
+      to { transform: scale(1.04) translate(-2%, 1%); }
+    }
+    @keyframes kbZoomOut {
+      from { transform: scale(1.15) translate(0, -1.5%); }
+      to { transform: scale(1.02) translate(0, 0.5%); }
+    }
+
+    .tutorial-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at center, rgba(5, 5, 10, 0.15) 20%, rgba(5, 5, 10, 0.82) 100%),
+        linear-gradient(180deg, rgba(5, 5, 10, 0.65) 0%, rgba(5, 5, 10, 0.25) 38%, rgba(5, 5, 10, 0.88) 100%);
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .tutorial-scanlines {
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.025) 0px,
+        rgba(255, 255, 255, 0.025) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .tutorial-rain-fx {
+      position: absolute;
+      inset: -40% -20%;
+      background-image:
+        repeating-linear-gradient(
+          105deg,
+          transparent 0px,
+          transparent 26px,
+          rgba(0, 240, 255, 0.09) 26px,
+          rgba(0, 240, 255, 0.09) 27px
+        ),
+        repeating-linear-gradient(
+          105deg,
+          transparent 0px,
+          transparent 44px,
+          rgba(255, 0, 85, 0.07) 44px,
+          rgba(255, 0, 85, 0.07) 45px
+        );
+      pointer-events: none;
+      z-index: 3;
+      opacity: 0.7;
+      animation: tutorialRainFall 1.1s linear infinite;
+      animation-play-state: paused;
+    }
+
+    .tutorial-stage.is-playing .tutorial-rain-fx {
+      animation-play-state: running;
+    }
+
+    @keyframes tutorialRainFall {
+      from { transform: translateY(-24px) translateX(-6px); }
+      to { transform: translateY(24px) translateX(6px); }
+    }
+
+    .tutorial-scene {
+      position: absolute;
+      inset: 0;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0.75rem 0.9rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      pointer-events: none;
+    }
+
+    @media (min-width: 640px) {
+      .tutorial-scene {
+        padding: 1.25rem 1.5rem;
+      }
+    }
+
+    .tutorial-scene.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .tutorial-qa-row {
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .tutorial-qa-row.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tutorial-stamp {
+      opacity: 0;
+      transform: scale(1.9) rotate(-8deg);
+      transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.22, 1.35, 0.36, 1);
+    }
+    .tutorial-stamp.stamped {
+      opacity: 1;
+      transform: scale(1) rotate(-3deg);
+    }
+
+    .tutorial-mode-badge {
+      opacity: 0;
+      transform: translateY(10px) scale(0.95);
+      transition: opacity 0.38s ease, transform 0.38s ease;
+    }
+    .tutorial-mode-badge.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   </style>
 </head>
 <body class="font-body text-gray-200 antialiased">
@@ -361,38 +540,270 @@
       </div>
     </div>
 
-    <!-- MODAL: ¿CÓMO SE JUEGA Y ROLES? -->
+    <!-- MODAL: ¿CÓMO SE JUEGA? (REDESIGN + 1 MIN NOIR NEON VIDEO) -->
     <div id="modalRules" class="modal whitelist-control">
-      <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full text-left relative border-neon-gold max-h-[85vh] overflow-y-auto">
-        <button onclick="closeModal('modalRules')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h2 class="font-title text-3xl sm:text-4xl text-neon-gold mb-3 tracking-wider">¿CÓMO SE JUEGA Y ROLES?</h2>
-        
-        <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
-          <div class="bg-black/50 p-3.5 rounded-2xl border border-neon-pink/30">
-            <h3 class="font-bold text-neon-pink text-sm mb-1"><i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK (Guía de la Sala)</h3>
-            <p>Es la única persona que conoce la solución oculta. Lee el caso en voz alta y responde las preguntas de los detectives únicamente con:</p>
-            <div class="flex gap-2 my-2 justify-center">
-              <span class="bg-green-500/20 border border-green-500 text-green-400 font-title text-lg px-3 py-0.5 rounded-lg">SÍ</span>
-              <span class="bg-red-500/20 border border-red-500 text-red-400 font-title text-lg px-3 py-0.5 rounded-lg">NO</span>
-              <span class="bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-title text-lg px-3 py-0.5 rounded-lg">IRRELEVANTE</span>
+      <div class="glass-panel p-4 sm:p-7 rounded-3xl max-w-2xl w-full text-left relative border-neon-gold max-h-[90vh] overflow-y-auto shadow-[0_0_50px_rgba(250,204,21,0.18)]">
+        <button type="button" onclick="closeModal('modalRules')" aria-label="Cerrar reglas" class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 text-gray-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 cursor-pointer">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <div class="pr-8 mb-3.5">
+          <p class="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-neon-cyan mb-0.5">MANUAL DE INVESTIGACIÓN</p>
+          <h2 class="font-title text-3xl sm:text-4xl text-neon-gold tracking-wider leading-none">¿CÓMO SE JUEGA?</h2>
+        </div>
+
+        <!-- 2-Tab Switcher -->
+        <div class="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-black/60 border border-white/10 mb-4" role="tablist">
+          <button type="button" id="btnTabRulesText" role="tab" aria-selected="true" onclick="window.switchRulesTab('text')" class="py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer bg-neon-gold text-black shadow-[0_0_16px_rgba(250,204,21,0.4)]">
+            📖 LEER REGLAS
+          </button>
+          <button type="button" id="btnTabRulesVideo" role="tab" aria-selected="false" onclick="window.switchRulesTab('video', true)" class="py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer text-gray-300 hover:text-white hover:bg-white/10">
+            🎬 VER VIDEO (1 MIN)
+          </button>
+        </div>
+
+        <!-- TAB 1: LEER REGLAS -->
+        <div id="tabRulesText" class="space-y-4 text-xs sm:text-sm text-gray-300 leading-relaxed">
+          <!-- Prominent CTA to Watch Video -->
+          <button type="button" onclick="window.switchRulesTab('video', true)" class="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan text-white font-bold text-xs sm:text-sm tracking-wider uppercase shadow-[0_0_25px_rgba(255,0,85,0.35)] hover:brightness-110 transition-all flex items-center justify-center gap-2 cursor-pointer">
+            <span>▶ VER VIDEO RÁPIDO EN 1 MINUTO</span>
+          </button>
+
+          <!-- 2 FORMAS DE JUGAR -->
+          <div class="space-y-2.5">
+            <h3 class="font-title text-xl sm:text-2xl text-white tracking-widest flex items-center gap-2">
+              <span class="w-1.5 h-5 rounded-full bg-neon-cyan inline-block"></span>
+              2 FORMAS DE JUGAR
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- Presencial -->
+              <div class="bg-black/55 p-3.5 rounded-2xl border border-neon-gold/40 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                    <h4 class="font-bold text-neon-gold text-xs sm:text-sm"><i class="fa-solid fa-users mr-1"></i> PRESENCIAL</h4>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neon-gold/20 text-neon-gold border border-neon-gold/40">¡La más divertida!</span>
+                  </div>
+                  <p class="text-xs text-gray-300 leading-relaxed">
+                    Reúnanse cara a cara con amigos, familia o en un taller. Solo Sherlock mira la solución en su pantalla y lee el misterio en voz alta.
+                  </p>
+                </div>
+              </div>
+
+              <!-- En Vivo (Modo Sala) -->
+              <div class="bg-black/55 p-3.5 rounded-2xl border border-neon-purple/40">
+                <div class="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                  <h4 class="font-bold text-neon-purple text-xs sm:text-sm"><i class="fa-solid fa-tower-broadcast mr-1"></i> EN VIVO</h4>
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-neon-purple/20 text-neon-purple border border-neon-purple/40">Modo Sala</span>
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed mb-2">
+                  Ideal para grupos grandes o personas a distancia. Sherlock crea una sala con un código único y todos los detectives se conectan desde sus celulares para ver el caso sincronizado en tiempo real.
+                </p>
+                <ol class="list-decimal pl-4 space-y-1 text-[11px] text-gray-300 border-t border-white/10 pt-2">
+                  <li>Haz clic en <strong class="text-white">MODO EN VIVO</strong> arriba a la derecha.</li>
+                  <li>El anfitrión elige <strong class="text-neon-pink">SHERLOCK</strong> para recibir su código (ej. SHER-8492).</li>
+                  <li>Los jugadores eligen <strong class="text-neon-cyan">DETECTIVE</strong> e ingresan el código para sincronizarse.</li>
+                </ol>
+              </div>
             </div>
-            <button type="button" onclick="event.preventDefault(); openModal('modalSherlockTactics');" class="w-full mt-2 bg-neon-pink/20 border border-neon-pink/50 text-neon-pink hover:bg-neon-pink hover:text-white py-1.5 rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider cursor-pointer">
-              <i class="fa-solid fa-chess-knight mr-1"></i> VER CONSEJOS TÁCTICOS PARA SHERLOCK
-            </button>
           </div>
 
-          <div class="bg-black/50 p-3.5 rounded-2xl border border-neon-cyan/30">
-            <h3 class="font-bold text-neon-cyan text-sm mb-1"><i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVES (Jugadores)</h3>
-            <p>Formulan preguntas inteligentes para reconstruir los hechos. Deben pensar fuera de la caja y cuestionar todas sus suposiciones.</p>
+          <!-- 2 ROLES -->
+          <div class="space-y-2.5">
+            <h3 class="font-title text-xl sm:text-2xl text-white tracking-widest flex items-center gap-2">
+              <span class="w-1.5 h-5 rounded-full bg-neon-pink inline-block"></span>
+              2 ROLES
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <!-- SHERLOCK -->
+              <div class="bg-black/55 p-3.5 rounded-2xl border border-neon-pink/40 flex flex-col justify-between gap-2.5">
+                <div>
+                  <h4 class="font-bold text-neon-pink text-xs sm:text-sm mb-1.5"><i class="fa-solid fa-user-secret mr-1"></i> SHERLOCK</h4>
+                  <p class="text-xs text-gray-300 leading-relaxed">
+                    Conoce la solución del caso y puede crear la sala. Responde únicamente <strong class="text-green-400">SÍ</strong> o <strong class="text-red-400">NO</strong> (o <em class="text-yellow-300">Irrelevante</em> cuando aplica). Puede dar pistas, <strong class="text-white">pero solo si los detectives se esfuerzan mucho</strong>.
+                  </p>
+                  <div class="flex gap-1.5 mt-2.5 flex-wrap">
+                    <span class="bg-green-500/20 border border-green-500 text-green-400 font-title text-base px-2.5 py-0.5 rounded-lg">SÍ</span>
+                    <span class="bg-red-500/20 border border-red-500 text-red-400 font-title text-base px-2.5 py-0.5 rounded-lg">NO</span>
+                    <span class="bg-yellow-500/20 border border-yellow-500 text-yellow-400 font-title text-base px-2.5 py-0.5 rounded-lg">IRRELEVANTE</span>
+                  </div>
+                </div>
+                <button type="button" onclick="event.preventDefault(); openModal('modalSherlockTactics');" class="w-full bg-neon-pink/20 border border-neon-pink/50 text-neon-pink hover:bg-neon-pink hover:text-white py-2 px-3 rounded-xl font-bold transition-all text-[11px] uppercase tracking-wider cursor-pointer">
+                  <i class="fa-solid fa-chess-knight mr-1"></i> VER CONSEJOS TÁCTICOS PARA SHERLOCK
+                </button>
+              </div>
+
+              <!-- DETECTIVES -->
+              <div class="bg-black/55 p-3.5 rounded-2xl border border-neon-cyan/40">
+                <h4 class="font-bold text-neon-cyan text-xs sm:text-sm mb-1.5"><i class="fa-solid fa-magnifying-glass mr-1"></i> DETECTIVES</h4>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                  Hacen preguntas muy creativas para salirse de la caja y descartar situaciones que normalmente asumimos como comunes o normales. Su misión es <strong class="text-white">preguntar, preguntar y preguntar mucho</strong> hasta reconstruir toda la historia y resolver el caso.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: COMMERCIAL NOIR NEON VIDEO PLAYER (1 MIN) -->
+        <div id="tabRulesVideo" class="hidden space-y-3">
+          <audio id="tutNarrationAudio" src="assets/tutorial/sherlock-voz.wav" preload="auto"></audio>
+          <div id="tutorialVideoStage" class="tutorial-stage select-none" onclick="window.handleTutorialStageClick(event)">
+            <!-- 5 Bespoke Noir Neon Scene Backgrounds -->
+            <img id="tutBg1" src="assets/tutorial/scene1-hook.jpg" alt="Black Stories Noir" class="tutorial-bg-img kb-zoom-in active">
+            <img id="tutBg2" src="assets/tutorial/scene2-modes.jpg" alt="2 Formas de Jugar" class="tutorial-bg-img kb-pan-right">
+            <img id="tutBg3" src="assets/tutorial/scene3-bar.jpg" alt="Caso del Bar" class="tutorial-bg-img kb-pan-left">
+            <img id="tutBg4" src="assets/tutorial/scene4-interrogation.jpg" alt="Interrogatorio Detectives" class="tutorial-bg-img kb-zoom-out">
+            <img id="tutBg5" src="assets/tutorial/scene5-solved.jpg" alt="Caso Resuelto" class="tutorial-bg-img kb-zoom-in">
+
+            <!-- Noir Atmospheric Layers -->
+            <div class="tutorial-vignette"></div>
+            <div class="tutorial-rain-fx"></div>
+            <div class="tutorial-scanlines"></div>
+
+            <!-- Top HUD Bar -->
+            <div class="absolute top-2.5 left-3 right-3 z-10 flex items-center justify-between gap-2 pointer-events-none">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/70 border border-neon-pink/50 text-[9px] sm:text-[10px] font-bold tracking-widest text-neon-pink uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-neon-pink animate-pulse"></span> SPOT 1 MIN
+                </span>
+                <span id="tutVoiceIndicator" class="hidden inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-black/75 border border-neon-cyan/60 text-[9px] sm:text-[10px] font-bold tracking-widest text-neon-cyan uppercase shadow-[0_0_12px_rgba(0,240,255,0.35)]">
+                  <i class="fa-solid fa-microphone animate-pulse"></i> SHERLOCK NARRANDO
+                </span>
+              </div>
+              <span id="tutorialSceneCounter" class="px-2 py-0.5 rounded-full bg-black/70 border border-white/15 text-[9px] sm:text-[10px] font-mono text-neon-cyan tracking-wider shrink-0">
+                ESCENA 1/6
+              </span>
+            </div>
+
+            <!-- SCENE 1 (0.0s-10.6s): HOOK -->
+            <div id="tutScene1" class="tutorial-scene active justify-center items-center text-center">
+              <span class="inline-block px-2.5 py-0.5 rounded-full bg-neon-pink/25 border border-neon-pink/60 text-neon-pink text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-1.5">
+                PENSAMIENTO LATERAL
+              </span>
+              <h3 class="font-title text-4xl sm:text-6xl text-white tracking-wider drop-shadow-[0_0_18px_rgba(255,0,85,0.7)] leading-none mb-2">
+                BLACK <span class="text-neon-pink">STORIES</span>
+              </h3>
+              <p class="max-w-md text-[11px] sm:text-sm text-gray-100 bg-black/65 backdrop-blur-sm px-3 py-1.5 rounded-xl border border-white/15 leading-snug">
+                Un misterio sin sentido aparente. Solo puedes resolverlo preguntando <strong class="text-green-400">SÍ</strong> o <strong class="text-neon-pink">NO</strong>.
+              </p>
+            </div>
+
+            <!-- SCENE 2 (10.6s-17.8s): 2 FORMAS DE JUGAR -->
+            <div id="tutScene2" class="tutorial-scene justify-end">
+              <p class="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-neon-cyan mb-0.5">ELIGE TU MESA</p>
+              <h3 class="font-title text-2xl sm:text-4xl text-white tracking-wider leading-none mb-2 drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+                2 FORMAS DE JUGAR
+              </h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2.5">
+                <div id="tutModeBadge1" class="tutorial-mode-badge bg-black/75 backdrop-blur-sm border border-neon-gold/60 rounded-xl px-2.5 py-1.5 sm:p-2.5 shadow-[0_0_16px_rgba(250,204,21,0.2)]">
+                  <div class="font-bold text-neon-gold text-[11px] sm:text-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-users"></i> PRESENCIAL <span class="text-[9px] sm:text-[10px] text-white/90 font-normal">(¡La más divertida!)</span>
+                  </div>
+                </div>
+                <div id="tutModeBadge2" class="tutorial-mode-badge bg-black/75 backdrop-blur-sm border border-neon-purple/60 rounded-xl px-2.5 py-1.5 sm:p-2.5 shadow-[0_0_16px_rgba(168,85,247,0.25)]">
+                  <div class="font-bold text-neon-purple text-[11px] sm:text-xs flex items-center gap-1.5">
+                    <i class="fa-solid fa-tower-broadcast"></i> EN VIVO <span class="text-[9px] sm:text-[10px] text-white/90 font-normal">(Sala sincronizada para grupos grandes)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SCENE 3 (17.8s-30.6s): SHERLOCK LANZA EL CASO -->
+            <div id="tutScene3" class="tutorial-scene justify-end">
+              <div class="inline-flex items-center gap-1.5 self-start px-2.5 py-0.5 rounded-full bg-neon-pink/25 border border-neon-pink/60 text-neon-pink text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-1.5">
+                <i class="fa-solid fa-user-secret"></i> SHERLOCK LANZA EL CASO
+              </div>
+              <div class="bg-black/78 backdrop-blur-sm border-l-4 border-neon-pink rounded-r-2xl p-2.5 sm:p-4 shadow-xl">
+                <p class="text-[11px] sm:text-base text-white font-medium leading-snug italic">
+                  “Un hombre entra a un bar y pide un vaso de agua. El mesero saca un arma y le apunta. El hombre dice ‘gracias’ y se va.”
+                </p>
+              </div>
+            </div>
+
+            <!-- SCENE 4 (30.6s-48.6s): LOS DETECTIVES PREGUNTAN -->
+            <div id="tutScene4" class="tutorial-scene justify-end">
+              <h3 class="font-title text-lg sm:text-2xl text-neon-cyan tracking-wider leading-tight mb-1.5 drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)]">
+                LOS DETECTIVES PREGUNTAN, PREGUNTAN Y PREGUNTAN
+              </h3>
+              <div class="space-y-1.5">
+                <!-- Q1 -->
+                <div id="tutQa1" class="tutorial-qa-row flex items-center justify-between gap-2 bg-black/78 backdrop-blur-sm border border-white/15 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2">
+                  <span class="text-[10px] sm:text-xs text-gray-100 leading-tight">“¿El mesero quería robarlo?”</span>
+                  <span id="tutStamp1" class="tutorial-stamp shrink-0 font-title text-sm sm:text-lg tracking-widest px-2 py-0.5 rounded-lg bg-neon-pink/25 border border-neon-pink text-neon-pink shadow-[0_0_12px_rgba(255,0,85,0.65)]">NO</span>
+                </div>
+                <!-- Q2 -->
+                <div id="tutQa2" class="tutorial-qa-row flex items-center justify-between gap-2 bg-black/78 backdrop-blur-sm border border-white/15 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2">
+                  <span class="text-[10px] sm:text-xs text-gray-100 leading-tight">“¿El hombre tenía algo físico?”</span>
+                  <span id="tutStamp2" class="tutorial-stamp shrink-0 font-title text-sm sm:text-lg tracking-widest px-2 py-0.5 rounded-lg bg-emerald-500/25 border border-emerald-400 text-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.65)]">SÍ</span>
+                </div>
+                <!-- Q3 -->
+                <div id="tutQa3" class="tutorial-qa-row flex items-center justify-between gap-2 bg-black/82 backdrop-blur-sm border border-neon-gold/45 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2">
+                  <span class="text-[10px] sm:text-xs text-white font-semibold leading-tight">“¿Tenía hipo y el susto se lo quitó?”</span>
+                  <span id="tutStamp3" class="tutorial-stamp shrink-0 font-title text-xs sm:text-base tracking-wider px-2 py-0.5 rounded-lg bg-gradient-to-r from-neon-gold/30 to-neon-cyan/30 border border-neon-gold text-neon-gold shadow-[0_0_15px_rgba(250,204,21,0.75)]">¡SÍ! ¡CASO RESUELTO!</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- SCENE 5 (48.6s-57.3s): REGLA DE ORO -->
+            <div id="tutScene5" class="tutorial-scene justify-center items-center text-center">
+              <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-neon-gold/20 border border-neon-gold text-neon-gold text-[10px] sm:text-xs font-bold tracking-widest uppercase mb-1.5">
+                <i class="fa-solid fa-crown"></i> REGLA DE ORO
+              </span>
+              <div class="max-w-md bg-black/75 backdrop-blur-sm border border-neon-gold/40 rounded-2xl p-3 sm:p-4 shadow-[0_0_25px_rgba(250,204,21,0.2)]">
+                <p class="text-xs sm:text-base text-white font-semibold leading-snug">
+                  Cuestiona lo obvio y sal de la caja. <span class="text-neon-gold">Sherlock solo dará pistas si realmente te esfuerzas.</span>
+                </p>
+              </div>
+            </div>
+
+            <!-- SCENE 6 (57.3s-60.4s): OUTRO + CTA -->
+            <div id="tutScene6" class="tutorial-scene justify-center items-center text-center">
+              <p class="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-neon-cyan mb-1">TU TURNO, DETECTIVE</p>
+              <h3 class="font-title text-3xl sm:text-5xl text-white tracking-wider leading-none mb-3 drop-shadow-[0_0_16px_rgba(0,240,255,0.65)]">
+                ¿LISTOS PARA INVESTIGAR?
+              </h3>
+              <button type="button" onclick="event.stopPropagation(); window.openExpedientesFromTutorial();" class="bg-neon-pink hover:bg-pink-600 text-white font-title text-lg sm:text-2xl tracking-widest px-6 py-2 sm:px-8 sm:py-2.5 rounded-xl transition-all shadow-[0_0_24px_rgba(255,0,85,0.65)] cursor-pointer">
+                ABRIR EXPEDIENTES <i class="fa-solid fa-arrow-right ml-1.5"></i>
+              </button>
+            </div>
+
+            <!-- Center Pause Overlay (visible only when paused & not on Scene 6 CTA) -->
+            <div id="tutorialPausedOverlay" class="hidden absolute inset-0 z-20 flex items-center justify-center bg-black/35 pointer-events-none">
+              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-black/80 border-2 border-neon-cyan text-neon-cyan flex items-center justify-center shadow-[0_0_24px_rgba(0,240,255,0.6)]">
+                <i class="fa-solid fa-play text-lg sm:text-xl ml-0.5"></i>
+              </div>
+            </div>
           </div>
 
-          <div class="bg-black/50 p-3.5 rounded-2xl border border-neon-purple/30">
-            <h3 class="font-bold text-neon-purple text-sm mb-1"><i class="fa-solid fa-tower-broadcast mr-1"></i> MODO EN VIVO (Mesa Multijugador)</h3>
-            <ol class="list-decimal pl-4 space-y-1">
-              <li>Haz clic en el botón <strong class="text-white">MODO EN VIVO</strong> arriba a la derecha.</li>
-              <li>El anfitrión selecciona <strong class="text-neon-pink">SHERLOCK</strong> para recibir un código de sala (ej. SHER-8492).</li>
-              <li>Los jugadores eligen <strong class="text-neon-cyan">DETECTIVE</strong> e ingresan el código para sincronizar su pantalla en tiempo real.</li>
-            </ol>
+          <!-- Progress Bar (Clickable to Seek) -->
+          <div class="space-y-2 bg-black/60 p-3 rounded-2xl border border-white/10">
+            <div id="tutorialProgressBar" onclick="window.seekTutorialVideo(event)" role="slider" aria-label="Línea de tiempo del video" aria-valuemin="0" aria-valuemax="60" aria-valuenow="0" class="relative w-full h-3 rounded-full bg-white/10 overflow-hidden cursor-pointer group">
+              <div id="tutorialProgressFill" class="h-full w-0 bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan rounded-full transition-[width] duration-75"></div>
+              <!-- Scene Tick Markers -->
+              <span class="absolute top-0 bottom-0 w-px bg-black/70 pointer-events-none" style="left: 17.55%"></span>
+              <span class="absolute top-0 bottom-0 w-px bg-black/70 pointer-events-none" style="left: 29.47%"></span>
+              <span class="absolute top-0 bottom-0 w-px bg-black/70 pointer-events-none" style="left: 50.66%"></span>
+              <span class="absolute top-0 bottom-0 w-px bg-black/70 pointer-events-none" style="left: 80.46%"></span>
+              <span class="absolute top-0 bottom-0 w-px bg-black/70 pointer-events-none" style="left: 94.87%"></span>
+            </div>
+
+            <!-- Controls Row -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <button type="button" id="btnVideoPlayPause" onclick="window.toggleTutorialPlay()" class="px-3 py-1.5 rounded-xl bg-neon-cyan/20 border border-neon-cyan/60 text-neon-cyan hover:bg-neon-cyan hover:text-black text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5">
+                  <i class="fa-solid fa-play"></i> <span>PLAY</span>
+                </button>
+                <button type="button" id="btnVideoRestart" onclick="window.restartTutorialVideo()" class="px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-gray-200 hover:bg-white/20 text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5">
+                  <i class="fa-solid fa-rotate-left"></i> <span>REINICIAR</span>
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2.5">
+                <span id="tutorialTimeDisplay" class="font-mono text-[11px] sm:text-xs text-gray-300 tracking-wider">00:00 / 01:00</span>
+                <button type="button" id="btnVideoSound" onclick="window.toggleTutorialSound()" class="px-3 py-1.5 rounded-xl bg-neon-gold/20 border border-neon-gold/50 text-neon-gold hover:bg-neon-gold hover:text-black text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5">
+                  <i class="fa-solid fa-volume-high"></i> <span>SONIDO ON</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -979,6 +1390,495 @@
       if (modalEl) {
         modalEl.classList.remove('active'); 
       }
+      if (id === 'modalRules' && typeof window.resetTutorialVideo === 'function') {
+        window.resetTutorialVideo(true);
+      }
+    };
+
+    // --- Commercial Noir Neon Tutorial Video Player (1 min, Master Audio Sync) ---
+    let TUTORIAL_DURATION = 60.4;
+    const TUTORIAL_SCENES = [
+      { id: 1, start: 0.0,  end: 10.6, bg: 1 },
+      { id: 2, start: 10.6, end: 17.8, bg: 2 },
+      { id: 3, start: 17.8, end: 30.6, bg: 3 },
+      { id: 4, start: 30.6, end: 48.6, bg: 4 },
+      { id: 5, start: 48.6, end: 57.3, bg: 5 },
+      { id: 6, start: 57.3, end: 60.4, bg: 1 }
+    ];
+
+    const tutorialState = {
+      playing: false,
+      elapsed: 0,
+      soundOn: true,
+      activeScene: 1,
+      rafId: null,
+      lastTick: 0,
+      firedCues: new Set(),
+      audioBound: false,
+      synthsReady: false,
+      droneActive: false,
+      droneFilter: null,
+      droneSynth: null,
+      transitionSynth: null,
+      noSynth: null,
+      yesSynth: null,
+      chordSynth: null
+    };
+
+    function setVoiceIndicatorActive(active) {
+      const el = document.getElementById('tutVoiceIndicator');
+      if (el) {
+        el.classList.toggle('hidden', !active);
+      }
+    }
+
+    function finishTutorialPlayback() {
+      tutorialState.elapsed = TUTORIAL_DURATION;
+      tutorialState.playing = false;
+      if (tutorialState.rafId) {
+        cancelAnimationFrame(tutorialState.rafId);
+        tutorialState.rafId = null;
+      }
+      stopTutorialDrone();
+      renderTutorialFrame(tutorialState.elapsed, false);
+    }
+
+    function getTutorialAudio() {
+      const audio = document.getElementById('tutNarrationAudio');
+      if (audio && !tutorialState.audioBound) {
+        tutorialState.audioBound = true;
+        audio.addEventListener('loadedmetadata', () => {
+          if (Number.isFinite(audio.duration) && audio.duration > 10) {
+            TUTORIAL_DURATION = audio.duration;
+            TUTORIAL_SCENES[TUTORIAL_SCENES.length - 1].end = TUTORIAL_DURATION;
+            const barEl = document.getElementById('tutorialProgressBar');
+            if (barEl) barEl.setAttribute('aria-valuemax', String(Math.floor(TUTORIAL_DURATION)));
+            renderTutorialFrame(tutorialState.elapsed, false);
+          }
+        });
+        audio.addEventListener('ended', () => {
+          if (!tutorialState.playing) return;
+          finishTutorialPlayback();
+        });
+        if (audio.readyState >= 1 && Number.isFinite(audio.duration) && audio.duration > 10) {
+          TUTORIAL_DURATION = audio.duration;
+          TUTORIAL_SCENES[TUTORIAL_SCENES.length - 1].end = TUTORIAL_DURATION;
+        }
+      }
+      return audio;
+    }
+
+    getTutorialAudio();
+
+    function initTutorialSynths() {
+      if (tutorialState.synthsReady || typeof Tone === 'undefined') return;
+      try {
+        tutorialState.droneFilter = new Tone.Filter(150, 'lowpass').toDestination();
+        tutorialState.droneSynth = new Tone.Synth({
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 1.2, decay: 0.2, sustain: 1.0, release: 0.8 }
+        }).connect(tutorialState.droneFilter);
+        tutorialState.droneSynth.volume.value = -32;
+
+        tutorialState.transitionSynth = new Tone.Synth({
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.04, decay: 0.35, sustain: 0.08, release: 0.5 }
+        }).toDestination();
+        tutorialState.transitionSynth.volume.value = -18;
+
+        tutorialState.noSynth = new Tone.MembraneSynth({
+          pitchDecay: 0.08,
+          octaves: 3,
+          envelope: { attack: 0.005, decay: 0.22, sustain: 0.01, release: 0.15 }
+        }).toDestination();
+        tutorialState.noSynth.volume.value = -14;
+
+        tutorialState.yesSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'sine' },
+          envelope: { attack: 0.01, decay: 0.25, sustain: 0.05, release: 0.35 }
+        }).toDestination();
+        tutorialState.yesSynth.volume.value = -15;
+
+        tutorialState.chordSynth = new Tone.PolySynth(Tone.Synth, {
+          oscillator: { type: 'triangle' },
+          envelope: { attack: 0.04, decay: 0.4, sustain: 0.25, release: 1.0 }
+        }).toDestination();
+        tutorialState.chordSynth.volume.value = -14;
+
+        tutorialState.synthsReady = true;
+      } catch (e) {}
+    }
+
+    function startTutorialDrone() {
+      if (!tutorialState.soundOn || !tutorialState.playing || tutorialState.droneActive || typeof Tone === 'undefined') return;
+      try {
+        if (Tone.context && Tone.context.state !== 'running') {
+          Tone.start().catch(() => {});
+        }
+        initTutorialSynths();
+        if (!tutorialState.synthsReady || !tutorialState.droneSynth) return;
+        tutorialState.droneSynth.triggerAttack('D1', Tone.now());
+        tutorialState.droneActive = true;
+      } catch (e) {}
+    }
+
+    function stopTutorialDrone() {
+      if (!tutorialState.droneActive) return;
+      tutorialState.droneActive = false;
+      try {
+        if (tutorialState.droneSynth) {
+          tutorialState.droneSynth.triggerRelease(Tone.now());
+        }
+      } catch (e) {}
+    }
+
+    function playTutorialFx(kind) {
+      if (!tutorialState.soundOn || typeof Tone === 'undefined') return;
+      try {
+        if (Tone.context && Tone.context.state !== 'running') {
+          Tone.start().catch(() => {});
+        }
+        initTutorialSynths();
+        if (!tutorialState.synthsReady) return;
+        const now = Tone.now();
+        if (kind === 'transition') {
+          tutorialState.transitionSynth.triggerAttackRelease('C2', '0.35', now);
+        } else if (kind === 'no') {
+          tutorialState.noSynth.triggerAttackRelease('E2', '8n', now);
+        } else if (kind === 'yes') {
+          tutorialState.yesSynth.triggerAttackRelease(['E5', 'B5'], '8n', now);
+        } else if (kind === 'solved') {
+          tutorialState.chordSynth.triggerAttackRelease(['C4', 'E4', 'G4', 'B4', 'D5'], '2n', now);
+        }
+      } catch (e) {}
+    }
+
+    function formatTutorialTime(sec) {
+      const clamped = Math.max(0, Math.min(TUTORIAL_DURATION, Math.floor(sec)));
+      const mm = String(Math.floor(clamped / 60)).padStart(2, '0');
+      const ss = String(clamped % 60).padStart(2, '0');
+      return `${mm}:${ss}`;
+    }
+
+    function getSceneForTime(t) {
+      for (let i = 0; i < TUTORIAL_SCENES.length; i++) {
+        if (t < TUTORIAL_SCENES[i].end || i === TUTORIAL_SCENES.length - 1) {
+          return TUTORIAL_SCENES[i];
+        }
+      }
+      return TUTORIAL_SCENES[0];
+    }
+
+    function renderTutorialFrame(t, allowFx) {
+      const sceneObj = getSceneForTime(t);
+      const prevScene = tutorialState.activeScene;
+      tutorialState.activeScene = sceneObj.id;
+
+      // Update Scenes visibility
+      for (let i = 1; i <= 6; i++) {
+        const scEl = document.getElementById(`tutScene${i}`);
+        if (scEl) scEl.classList.toggle('active', i === sceneObj.id);
+      }
+
+      // Update 5 Background images
+      for (let b = 1; b <= 5; b++) {
+        const bgEl = document.getElementById(`tutBg${b}`);
+        if (bgEl) bgEl.classList.toggle('active', b === sceneObj.bg);
+      }
+
+      // Scene transition sound FX
+      if (allowFx && prevScene !== sceneObj.id) {
+        playTutorialFx('transition');
+      }
+
+      // Scene 2 animated mode badges (10.6s -> 17.8s)
+      const badge1 = document.getElementById('tutModeBadge1');
+      const badge2 = document.getElementById('tutModeBadge2');
+      if (badge1) badge1.classList.toggle('visible', t >= 10.9 && t < 17.8);
+      if (badge2) badge2.classList.toggle('visible', t >= 13.6 && t < 17.8);
+
+      // Scene 4 Q&A bubbles & glowing stamps (30.6s -> 48.6s)
+      const qa1 = document.getElementById('tutQa1');
+      const qa2 = document.getElementById('tutQa2');
+      const qa3 = document.getElementById('tutQa3');
+      const st1 = document.getElementById('tutStamp1');
+      const st2 = document.getElementById('tutStamp2');
+      const st3 = document.getElementById('tutStamp3');
+
+      if (qa1) qa1.classList.toggle('visible', t >= 36.6 && t < 48.6);
+      if (st1) st1.classList.toggle('stamped', t >= 38.6 && t < 48.6);
+      if (qa2) qa2.classList.toggle('visible', t >= 39.7 && t < 48.6);
+      if (st2) st2.classList.toggle('stamped', t >= 42.0 && t < 48.6);
+      if (qa3) qa3.classList.toggle('visible', t >= 43.2 && t < 48.6);
+      if (st3) st3.classList.toggle('stamped', t >= 45.9 && t < 48.6);
+
+      if (allowFx) {
+        if (t >= 38.6 && !tutorialState.firedCues.has('no')) {
+          tutorialState.firedCues.add('no');
+          playTutorialFx('no');
+        }
+        if (t >= 42.0 && !tutorialState.firedCues.has('yes')) {
+          tutorialState.firedCues.add('yes');
+          playTutorialFx('yes');
+        }
+        if (t >= 45.9 && !tutorialState.firedCues.has('solved')) {
+          tutorialState.firedCues.add('solved');
+          playTutorialFx('solved');
+        }
+      }
+
+      // HUD, Progress Bar & Time Counter
+      const counterEl = document.getElementById('tutorialSceneCounter');
+      if (counterEl) counterEl.textContent = `ESCENA ${sceneObj.id}/6`;
+
+      const pct = Math.max(0, Math.min(100, (t / TUTORIAL_DURATION) * 100));
+      const fillEl = document.getElementById('tutorialProgressFill');
+      if (fillEl) fillEl.style.width = `${pct}%`;
+
+      const barEl = document.getElementById('tutorialProgressBar');
+      if (barEl) barEl.setAttribute('aria-valuenow', String(Math.floor(t)));
+
+      const timeEl = document.getElementById('tutorialTimeDisplay');
+      if (timeEl) timeEl.textContent = `${formatTutorialTime(t)} / ${formatTutorialTime(TUTORIAL_DURATION)}`;
+
+      updateTutorialControlsUI();
+    }
+
+    function updateTutorialControlsUI() {
+      const stage = document.getElementById('tutorialVideoStage');
+      const playBtn = document.getElementById('btnVideoPlayPause');
+      const pauseOverlay = document.getElementById('tutorialPausedOverlay');
+      const soundBtn = document.getElementById('btnVideoSound');
+      const audio = getTutorialAudio();
+
+      if (stage) stage.classList.toggle('is-playing', tutorialState.playing);
+
+      const isNarrating = tutorialState.playing && (audio ? !audio.muted : tutorialState.soundOn);
+      setVoiceIndicatorActive(isNarrating);
+
+      if (playBtn) {
+        if (tutorialState.playing) {
+          playBtn.innerHTML = '<i class="fa-solid fa-pause"></i> <span>PAUSA</span>';
+        } else {
+          playBtn.innerHTML = '<i class="fa-solid fa-play"></i> <span>PLAY</span>';
+        }
+      }
+
+      if (pauseOverlay) {
+        const showOverlay = !tutorialState.playing && tutorialState.activeScene !== 6;
+        pauseOverlay.classList.toggle('hidden', !showOverlay);
+      }
+
+      if (soundBtn) {
+        if (tutorialState.soundOn) {
+          soundBtn.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>SONIDO ON</span>';
+          soundBtn.classList.remove('text-gray-400', 'border-white/20', 'bg-white/10');
+          soundBtn.classList.add('text-neon-gold', 'border-neon-gold/50', 'bg-neon-gold/20');
+        } else {
+          soundBtn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> <span>SONIDO OFF</span>';
+          soundBtn.classList.remove('text-neon-gold', 'border-neon-gold/50', 'bg-neon-gold/20');
+          soundBtn.classList.add('text-gray-400', 'border-white/20', 'bg-white/10');
+        }
+      }
+    }
+
+    function tutorialLoop(timestamp) {
+      if (!tutorialState.playing) return;
+      if (!tutorialState.lastTick) tutorialState.lastTick = timestamp;
+      const delta = Math.min(0.1, Math.max(0, (timestamp - tutorialState.lastTick) / 1000));
+      tutorialState.lastTick = timestamp;
+
+      const audio = getTutorialAudio();
+      if (audio && !audio.paused && !audio.ended) {
+        tutorialState.elapsed = audio.currentTime;
+      } else if (audio && audio.ended) {
+        finishTutorialPlayback();
+        return;
+      } else {
+        tutorialState.elapsed += delta;
+      }
+
+      if (tutorialState.elapsed >= TUTORIAL_DURATION) {
+        finishTutorialPlayback();
+        return;
+      }
+
+      renderTutorialFrame(tutorialState.elapsed, true);
+      tutorialState.rafId = requestAnimationFrame(tutorialLoop);
+    }
+
+    window.playTutorialVideo = function() {
+      const audio = getTutorialAudio();
+      if (tutorialState.elapsed >= TUTORIAL_DURATION - 0.1) {
+        tutorialState.elapsed = 0;
+        tutorialState.firedCues.clear();
+        if (audio) {
+          try { audio.currentTime = 0; } catch (e) {}
+        }
+      }
+      if (tutorialState.soundOn && typeof Tone !== 'undefined') {
+        try { Tone.start().catch(() => {}); } catch (e) {}
+      }
+      if (!tutorialState.playing) {
+        const isFreshStart = tutorialState.elapsed < 0.05;
+        tutorialState.playing = true;
+        tutorialState.lastTick = 0;
+        if (audio) {
+          audio.muted = !tutorialState.soundOn;
+          if (Math.abs((audio.currentTime || 0) - tutorialState.elapsed) > 0.2) {
+            try { audio.currentTime = tutorialState.elapsed; } catch (e) {}
+          }
+          try {
+            const playPromise = audio.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+              playPromise.catch(() => {});
+            }
+          } catch (e) {}
+        }
+        if (tutorialState.soundOn) {
+          startTutorialDrone();
+        }
+        if (isFreshStart) playTutorialFx('transition');
+        renderTutorialFrame(tutorialState.elapsed, false);
+        tutorialState.rafId = requestAnimationFrame(tutorialLoop);
+      }
+    };
+
+    window.pauseTutorialVideo = function() {
+      tutorialState.playing = false;
+      if (tutorialState.rafId) {
+        cancelAnimationFrame(tutorialState.rafId);
+        tutorialState.rafId = null;
+      }
+      const audio = getTutorialAudio();
+      if (audio) {
+        try { audio.pause(); } catch (e) {}
+      }
+      stopTutorialDrone();
+      updateTutorialControlsUI();
+    };
+
+    window.toggleTutorialPlay = function() {
+      if (tutorialState.playing) {
+        window.pauseTutorialVideo();
+      } else {
+        window.playTutorialVideo();
+      }
+    };
+
+    window.handleTutorialStageClick = function(e) {
+      if (e && e.target && e.target.closest('button')) return;
+      window.toggleTutorialPlay();
+    };
+
+    window.resetTutorialVideo = function(keepTab) {
+      window.pauseTutorialVideo();
+      const audio = getTutorialAudio();
+      if (audio) {
+        try { audio.currentTime = 0; } catch (e) {}
+      }
+      tutorialState.elapsed = 0;
+      tutorialState.activeScene = 1;
+      tutorialState.firedCues.clear();
+      renderTutorialFrame(0, false);
+      if (!keepTab) {
+        window.switchRulesTab('text');
+      }
+    };
+
+    window.restartTutorialVideo = function() {
+      window.pauseTutorialVideo();
+      const audio = getTutorialAudio();
+      if (audio) {
+        try { audio.currentTime = 0; } catch (e) {}
+      }
+      tutorialState.elapsed = 0;
+      tutorialState.activeScene = 1;
+      tutorialState.firedCues.clear();
+      renderTutorialFrame(0, false);
+      window.playTutorialVideo();
+    };
+
+    window.seekTutorialVideo = function(event) {
+      const bar = document.getElementById('tutorialProgressBar');
+      if (!bar || !event) return;
+      const rect = bar.getBoundingClientRect();
+      const ratio = rect.width > 0 ? Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) : 0;
+      const targetTime = ratio * TUTORIAL_DURATION;
+      tutorialState.elapsed = targetTime;
+      const audio = getTutorialAudio();
+      if (audio) {
+        try { audio.currentTime = targetTime; } catch (e) {}
+      }
+      tutorialState.firedCues.clear();
+      if (targetTime >= 38.6) tutorialState.firedCues.add('no');
+      if (targetTime >= 42.0) tutorialState.firedCues.add('yes');
+      if (targetTime >= 45.9) tutorialState.firedCues.add('solved');
+      renderTutorialFrame(targetTime, false);
+    };
+
+    window.toggleTutorialSound = function() {
+      tutorialState.soundOn = !tutorialState.soundOn;
+      const audio = getTutorialAudio();
+      if (audio) {
+        audio.muted = !tutorialState.soundOn;
+      }
+      if (!tutorialState.soundOn) {
+        stopTutorialDrone();
+      } else {
+        if (typeof Tone !== 'undefined') {
+          try { Tone.start().catch(() => {}); } catch (e) {}
+        }
+        if (tutorialState.playing) {
+          startTutorialDrone();
+        }
+      }
+      updateTutorialControlsUI();
+    };
+
+    window.switchRulesTab = function(tab, autoPlay = false) {
+      const textPanel = document.getElementById('tabRulesText');
+      const videoPanel = document.getElementById('tabRulesVideo');
+      const btnText = document.getElementById('btnTabRulesText');
+      const btnVideo = document.getElementById('btnTabRulesVideo');
+
+      if (tab === 'video') {
+        if (textPanel) textPanel.classList.add('hidden');
+        if (videoPanel) videoPanel.classList.remove('hidden');
+        if (btnText) {
+          btnText.setAttribute('aria-selected', 'false');
+          btnText.className = 'py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer text-gray-300 hover:text-white hover:bg-white/10';
+        }
+        if (btnVideo) {
+          btnVideo.setAttribute('aria-selected', 'true');
+          btnVideo.className = 'py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer bg-neon-cyan text-black shadow-[0_0_16px_rgba(0,240,255,0.45)]';
+        }
+        renderTutorialFrame(tutorialState.elapsed, false);
+        if (autoPlay) {
+          window.playTutorialVideo();
+        }
+      } else {
+        window.resetTutorialVideo(true);
+        if (videoPanel) videoPanel.classList.add('hidden');
+        if (textPanel) textPanel.classList.remove('hidden');
+        if (btnText) {
+          btnText.setAttribute('aria-selected', 'true');
+          btnText.className = 'py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer bg-neon-gold text-black shadow-[0_0_16px_rgba(250,204,21,0.4)]';
+        }
+        if (btnVideo) {
+          btnVideo.setAttribute('aria-selected', 'false');
+          btnVideo.className = 'py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer text-gray-300 hover:text-white hover:bg-white/10';
+        }
+      }
+    };
+
+    window.openExpedientesFromTutorial = function() {
+      window.closeModal('modalRules');
+      const slide2 = document.getElementById('slide2');
+      if (slide2) {
+        slide2.scrollIntoView({ behavior: 'smooth' });
+      }
+      window.location.hash = '#slide2';
     };
 
     // --- Role Management ---
