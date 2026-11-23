@@ -1,4 +1,4 @@
-const CACHE_NAME = 'blackstories-pwa-v5';
+const CACHE_NAME = 'blackstories-pwa-v6';
 
 const PRECACHE_URLS = [
   './',
@@ -45,6 +45,7 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/')) return;
 
   event.respondWith(
     fetch(request)

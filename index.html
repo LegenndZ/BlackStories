@@ -967,24 +967,105 @@
       </div>
     </div>
 
-    <!-- Donate Modal -->
+    <!-- Donate Modal (Wompi + Bre-B) -->
     <div id="modalDonate" class="modal whitelist-control">
-      <div class="glass-panel p-8 rounded-3xl max-w-lg w-full text-center relative border-neon-gold">
+      <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-lg w-full text-center relative border-neon-gold shadow-[0_0_50px_rgba(250,204,21,0.2)] max-h-[90vh] overflow-y-auto">
         <button onclick="closeModal('modalDonate')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <i class="fa-solid fa-hand-holding-heart text-4xl text-neon-gold mb-4"></i>
-        <h2 class="font-title text-3xl text-white mb-2 tracking-wider">APOYA EL PROYECTO</h2>
-        <p class="text-xs sm:text-sm text-gray-300 mb-4 leading-relaxed">
-          ¿Te atreves a enfrentar el verdadero desafío? Realiza una donación a partir de <strong>6 USD</strong> o <strong>20.000 COP</strong> para apoyar al creador.<br><br>
-          <span class="text-neon-cyan font-bold">¡IMPORTANTE!</span> Incluye tu correo electrónico en la nota del pago. Recibirás un correo invitándote a resolver los acertijos de máximo nivel con la clave secreta.
+        <i class="fa-solid fa-hand-holding-heart text-4xl text-neon-gold mb-3"></i>
+        <h2 class="font-title text-3xl sm:text-4xl text-white mb-2 tracking-wider">APOYA EL PROYECTO</h2>
+        <p class="text-xs sm:text-sm text-gray-300 mb-5 leading-relaxed">
+          ¿Te atreves a enfrentar el verdadero desafío? Realiza una donación a partir de <strong class="text-neon-gold">$20.000 COP</strong> para apoyar al creador y desbloquear los acertijos del <strong class="text-neon-purple">Nivel 3 y Extra</strong>.
         </p>
-        
-        <div class="bg-black/50 p-4 rounded-2xl mb-4 text-left border border-white/10">
-          <p class="text-xs sm:text-sm"><strong class="text-neon-gold">Bre-B (Colombia):</strong> Ronaldf18@hotmail.com</p>
+
+        <!-- Canal Principal: Wompi (Entrega automática al instante) -->
+        <div class="bg-emerald-500/10 border border-emerald-400/40 rounded-2xl p-4 mb-4 text-left">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-bolt"></i> Entrega inmediata de clave
+            </span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">RECOMENDADO</span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-gray-200 mb-3 leading-relaxed">
+            Al terminar tu donación en <strong>Wompi</strong>, volverás automáticamente aquí y verás tu <strong class="text-neon-cyan">clave secreta en pantalla al instante</strong>.
+          </p>
+          <a href="https://checkout.wompi.co/l/7oG6B8" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full bg-gradient-to-r from-[#2c2a29] via-[#00c389] to-[#00a876] hover:brightness-110 text-black font-extrabold py-3.5 px-4 rounded-xl transition-all text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_24px_rgba(0,195,137,0.4)]">
+            <i class="fa-solid fa-shield-halved mr-2 text-base"></i> Donar con Wompi
+          </a>
+          <p class="text-[10px] text-center text-gray-300 mt-2 tracking-wide">
+            PSE • Nequi • Bancolombia • Tarjetas Crédito / Débito
+          </p>
         </div>
 
-        <a href="https://www.paypal.com/ncp/payment/XB94J78GB2YE8" target="_blank" class="inline-flex items-center justify-center w-full bg-[#0070ba] hover:bg-[#005ea6] text-white font-bold py-3 rounded-xl transition-colors mb-2 text-xs uppercase tracking-wider">
-          <i class="fa-brands fa-paypal mr-2 text-xl"></i> Donar con PayPal
-        </a>
+        <!-- Canal Alternativo: Bre-B -->
+        <div class="bg-black/55 p-4 rounded-2xl text-left border border-white/15">
+          <div class="flex items-center justify-between gap-2 mb-1.5">
+            <p class="text-xs sm:text-sm font-bold text-neon-gold flex items-center gap-1.5">
+              <i class="fa-solid fa-building-columns"></i> Bre-B (Colombia)
+            </p>
+            <button type="button" onclick="window.copyBreBEmail()" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-neon-gold/15 border border-neon-gold/40 text-neon-gold hover:bg-neon-gold hover:text-black transition-colors cursor-pointer">
+              <i class="fa-solid fa-copy mr-1"></i> Copiar llave
+            </button>
+          </div>
+          <p class="text-xs sm:text-sm text-white font-mono select-all mb-1.5">Ronaldf18@hotmail.com</p>
+          <p class="text-[11px] text-gray-400 leading-relaxed">
+            <span class="text-neon-cyan font-bold">Nota Bre-B:</span> Incluye tu correo electrónico en la descripción del pago para enviarte la clave secreta manualmente.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wompi Payment Verification Result Modal -->
+    <div id="modalWompiResult" class="modal whitelist-control">
+      <div class="glass-panel p-6 sm:p-8 rounded-3xl max-w-md w-full text-center relative border-neon-cyan shadow-[0_0_55px_rgba(0,240,255,0.28)] max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('modalWompiResult')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+        <!-- Estado: Verificando -->
+        <div id="wompiStateLoading" class="py-4">
+          <i class="fa-solid fa-spinner fa-spin text-4xl text-neon-cyan mb-4"></i>
+          <h2 class="font-title text-3xl text-white mb-2 tracking-wider">VERIFICANDO TU PAGO...</h2>
+          <p class="text-xs sm:text-sm text-gray-300 leading-relaxed">Estamos confirmando tu transacción directamente con Wompi. Esto toma solo un segundo.</p>
+        </div>
+
+        <!-- Estado: Aprobado >= $20.000 COP -->
+        <div id="wompiStateApproved" class="hidden">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center text-emerald-400 text-3xl shadow-[0_0_25px_rgba(52,211,153,0.45)]">
+            <i class="fa-solid fa-unlock-keyhole"></i>
+          </div>
+          <h2 class="font-title text-3xl sm:text-4xl text-white mb-2 tracking-wider">¡PAGO CONFIRMADO!</h2>
+          <p class="text-xs sm:text-sm text-gray-300 mb-4 leading-relaxed">
+            ¡Mil gracias por apoyar <strong class="text-neon-pink">BlackStories</strong>! Tu acceso al <strong class="text-neon-purple">Nivel 3 y Extra</strong> ya quedó desbloqueado automáticamente.
+          </p>
+          <div class="bg-black/70 border border-neon-gold/60 rounded-2xl p-4 mb-5">
+            <p class="text-[10px] font-bold text-neon-gold uppercase tracking-widest mb-1">TU CLAVE DE ACCESO NIVEL 3</p>
+            <div class="flex items-center justify-center gap-2.5">
+              <span id="wompiRevealedCode" class="font-title text-3xl sm:text-4xl tracking-widest text-white select-all">---</span>
+              <button type="button" onclick="window.copyWompiAccessCode()" class="px-3 py-1.5 rounded-xl bg-neon-cyan/20 border border-neon-cyan/60 text-neon-cyan hover:bg-neon-cyan hover:text-black text-xs font-bold uppercase tracking-wider transition-all cursor-pointer">
+                <i class="fa-solid fa-copy mr-1"></i> Copiar
+              </button>
+            </div>
+            <p id="wompiCopyFeedback" class="text-[11px] text-emerald-400 mt-1.5 hidden">¡Clave copiada al portapapeles!</p>
+          </div>
+          <button type="button" onclick="closeModal('modalWompiResult'); window.location.hash='#slide2';" class="w-full bg-neon-pink hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-xs shadow-[0_0_20px_rgba(255,0,85,0.45)] cursor-pointer">
+            <i class="fa-solid fa-folder-open mr-1.5"></i> ABRIR EXPEDIENTES NIVEL 3
+          </button>
+        </div>
+
+        <!-- Estado: Pendiente / Menor al mínimo / Error -->
+        <div id="wompiStateNotice" class="hidden">
+          <div id="wompiNoticeIconWrap" class="w-16 h-16 mx-auto mb-4 rounded-full bg-neon-gold/20 border-2 border-neon-gold flex items-center justify-center text-neon-gold text-3xl">
+            <i id="wompiNoticeIcon" class="fa-solid fa-clock"></i>
+          </div>
+          <h2 id="wompiNoticeTitle" class="font-title text-3xl text-white mb-2 tracking-wider">ESTADO DEL PAGO</h2>
+          <p id="wompiNoticeMessage" class="text-xs sm:text-sm text-gray-300 mb-5 leading-relaxed"></p>
+          <div class="flex flex-col gap-2">
+            <button id="btnWompiRetry" type="button" onclick="window.retryWompiVerification()" class="hidden w-full bg-neon-cyan text-black hover:bg-cyan-400 font-bold py-3 rounded-xl transition-colors uppercase tracking-wider text-xs cursor-pointer">
+              <i class="fa-solid fa-rotate-right mr-1.5"></i> VERIFICAR DE NUEVO
+            </button>
+            <button type="button" onclick="closeModal('modalWompiResult')" class="w-full bg-white/10 hover:bg-white/20 text-white font-bold py-2.5 rounded-xl transition-colors uppercase tracking-wider text-xs cursor-pointer">
+              CERRAR
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1989,17 +2070,171 @@
       }
     });
 
-    // --- Unlock Logic ---
+    // --- Unlock Logic & Wompi Auto-Verification ---
+    function applyLevel3Unlock(persist = true) {
+      document.querySelectorAll('.premium-slide').forEach(el => el.classList.remove('premium-locked'));
+      if (persist) {
+        try { localStorage.setItem('bs_level3_unlocked', 'true'); } catch (_) {}
+      }
+    }
+
+    if (localStorage.getItem('bs_level3_unlocked') === 'true') {
+      applyLevel3Unlock(false);
+    }
+
     window.checkCode = function() {
       const code = document.getElementById('unlockCode').value.trim().toLowerCase();
       if (code === 'ronin18') {
-        document.querySelectorAll('.premium-slide').forEach(el => el.classList.remove('premium-locked'));
+        applyLevel3Unlock(true);
+        document.getElementById('unlockError').classList.add('hidden');
         closeModal('modalUnlock');
         alert("¡Código Aceptado! Has desbloqueado los misterios máximos.");
       } else {
         document.getElementById('unlockError').classList.remove('hidden');
       }
     };
+
+    window.copyBreBEmail = function() {
+      const email = 'Ronaldf18@hotmail.com';
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(() => {
+          alert(`Llave Bre-B copiada: ${email}`);
+        }).catch(() => {
+          alert(`Llave Bre-B: ${email}`);
+        });
+      } else {
+        alert(`Llave Bre-B: ${email}`);
+      }
+    };
+
+    let lastWompiTransactionId = null;
+
+    function showWompiModalState(stateName) {
+      const loadingEl = document.getElementById('wompiStateLoading');
+      const approvedEl = document.getElementById('wompiStateApproved');
+      const noticeEl = document.getElementById('wompiStateNotice');
+      if (loadingEl) loadingEl.classList.toggle('hidden', stateName !== 'loading');
+      if (approvedEl) approvedEl.classList.toggle('hidden', stateName !== 'approved');
+      if (noticeEl) noticeEl.classList.toggle('hidden', stateName !== 'notice');
+    }
+
+    function showWompiNotice(title, message, iconClass, allowRetry = false) {
+      const titleEl = document.getElementById('wompiNoticeTitle');
+      const msgEl = document.getElementById('wompiNoticeMessage');
+      const iconEl = document.getElementById('wompiNoticeIcon');
+      const retryBtn = document.getElementById('btnWompiRetry');
+      if (titleEl) titleEl.textContent = title;
+      if (msgEl) msgEl.textContent = message;
+      if (iconEl) iconEl.className = `fa-solid ${iconClass}`;
+      if (retryBtn) retryBtn.classList.toggle('hidden', !allowRetry);
+      showWompiModalState('notice');
+    }
+
+    window.copyWompiAccessCode = function() {
+      const codeEl = document.getElementById('wompiRevealedCode');
+      const feedbackEl = document.getElementById('wompiCopyFeedback');
+      const codeText = codeEl ? codeEl.textContent.trim() : '';
+      if (!codeText || codeText === '---') return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(codeText).then(() => {
+          if (feedbackEl) feedbackEl.classList.remove('hidden');
+        }).catch(() => {});
+      }
+    };
+
+    window.retryWompiVerification = function() {
+      if (lastWompiTransactionId) {
+        window.verifyWompiTransaction(lastWompiTransactionId);
+      }
+    };
+
+    window.verifyWompiTransaction = async function(txId) {
+      if (!txId) return;
+      lastWompiTransactionId = txId;
+      showWompiModalState('loading');
+      openModal('modalWompiResult');
+
+      try {
+        const resp = await fetch(`/api/verificar-wompi?id=${encodeURIComponent(txId)}`, {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store'
+        });
+        const data = await resp.json().catch(() => null);
+
+        if (resp.ok && data && data.approved && data.meetsMinimum && data.accessCode) {
+          const codeEl = document.getElementById('wompiRevealedCode');
+          const feedbackEl = document.getElementById('wompiCopyFeedback');
+          if (codeEl) codeEl.textContent = data.accessCode;
+          if (feedbackEl) feedbackEl.classList.add('hidden');
+          applyLevel3Unlock(true);
+          showWompiModalState('approved');
+
+          // Limpiar ?id=... de la URL manteniendo el hash actual
+          try {
+            const cleanUrl = window.location.pathname + window.location.hash;
+            window.history.replaceState({}, document.title, cleanUrl);
+          } catch (_) {}
+          return;
+        }
+
+        if (data && data.approved && data.meetsMinimum === false) {
+          const paidFmt = Number(data.amountCop || 0).toLocaleString('es-CO');
+          const minFmt = Number(data.minCop || 20000).toLocaleString('es-CO');
+          showWompiNotice(
+            '¡GRACIAS POR TU APOYO!',
+            `Recibimos tu donación aprobada por $${paidFmt} COP. Recuerda que la clave automática del Nivel 3 y Extra se activa con aportes desde $${minFmt} COP.`,
+            'fa-heart',
+            false
+          );
+          return;
+        }
+
+        if (data && data.status === 'PENDING') {
+          showWompiNotice(
+            'PAGO EN PROCESO',
+            'Tu pago en Wompi aún aparece como PENDIENTE (muy común durante unos segundos en PSE o Nequi). Espera un momento y pulsa "Verificar de nuevo".',
+            'fa-clock',
+            true
+          );
+          return;
+        }
+
+        if (data && (data.status === 'DECLINED' || data.status === 'VOIDED' || data.status === 'ERROR')) {
+          showWompiNotice(
+            'PAGO NO APROBADO',
+            'Wompi reportó que esta transacción no fue aprobada. Puedes intentar nuevamente desde el botón "Apoyar Creador".',
+            'fa-circle-xmark',
+            false
+          );
+          return;
+        }
+
+        showWompiNotice(
+          'NO PUDIMOS VERIFICAR EL PAGO',
+          (data && data.error) ? data.error : 'No encontramos una transacción aprobada con ese código. Si acabas de pagar, intenta de nuevo en unos segundos.',
+          'fa-triangle-exclamation',
+          true
+        );
+      } catch (err) {
+        showWompiNotice(
+          'ERROR DE CONEXIÓN',
+          'No pudimos contactar el verificador de pagos en este momento. Revisa tu conexión e intenta nuevamente.',
+          'fa-wifi',
+          true
+        );
+      }
+    };
+
+    (function checkWompiReturnParam() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const txId = params.get('id');
+        if (txId && /^[a-zA-Z0-9_-]{4,100}$/.test(txId.trim())) {
+          window.verifyWompiTransaction(txId.trim());
+        }
+      } catch (_) {}
+    })();
 
     // --- Translation Custom Button ---
     window.toggleLanguage = function() {
