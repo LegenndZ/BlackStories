@@ -377,9 +377,245 @@
       opacity: 1;
       transform: translateY(0) scale(1);
     }
+
+    /* ========================================================================
+       CINEMATIC FRAME-BY-FRAME CANVAS INTRO (Casa a Sotavento + diseno)
+       ======================================================================== */
+    :root {
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    #brainSplashIntro {
+      position: fixed;
+      inset: 0;
+      z-index: 950;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 1;
+      transition: opacity 420ms var(--ease-out);
+      will-change: opacity;
+    }
+
+    #brainSplashIntro.intro-fading {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #brainSplashIntro.intro-hidden {
+      display: none !important;
+    }
+
+    #brainIntroCanvas {
+      width: 100vw;
+      height: 100dvh;
+      display: block;
+      object-fit: cover;
+    }
+
+    .brain-intro-skip {
+      position: absolute;
+      bottom: max(1.5rem, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.38);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    /* Smooth handoff into Slide 1 Home Card (Casa a Sotavento snappy landing) */
+    body.intro-playing #heroCard {
+      opacity: 0;
+      transform: translateY(10px) scale(0.97);
+    }
+
+    #heroCard {
+      transition: opacity 320ms var(--ease-out), transform 320ms var(--ease-out);
+      will-change: opacity, transform;
+    }
+
+    /* Emil Kowalski tactile press feedback on primary Hero controls */
+    .hero-pressable {
+      transition: transform 160ms var(--ease-out), background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+    }
+    .hero-pressable:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #brainSplashIntro {
+        transition: opacity 220ms ease !important;
+      }
+      body.intro-playing #heroCard {
+        transform: none;
+      }
+    }
   </style>
 </head>
-<body class="font-body text-gray-200 antialiased">
+<body class="font-body text-gray-200 antialiased intro-playing">
+
+  <!-- CINEMATIC 60-FRAME CANVAS INTRO OVERLAY (Casa a Sotavento Engine) -->
+  <div id="brainSplashIntro" role="presentation" aria-hidden="true" onclick="window.dismissBrainIntro && window.dismissBrainIntro(true)">
+    <canvas id="brainIntroCanvas" width="1280" height="720"></canvas>
+    <span class="brain-intro-skip">Toca para entrar</span>
+  </div>
+  <script>
+    (function() {
+      var introEl = document.getElementById('brainSplashIntro');
+      var canvas = document.getElementById('brainIntroCanvas');
+      var ctx = canvas ? canvas.getContext('2d') : null;
+      var params = new URLSearchParams(window.location.search);
+      var hasWompiReturn = !!params.get('id');
+      var hasDeepHash = window.location.hash && window.location.hash !== '#slide1' && window.location.hash !== '#';
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var dismissed = false;
+      var rafId = null;
+
+      window.dismissBrainIntro = function(immediate) {
+        if (dismissed || !introEl) return;
+        dismissed = true;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+        document.body.classList.remove('intro-playing');
+        if (immediate) {
+          introEl.style.transitionDuration = '220ms';
+        }
+        introEl.classList.add('intro-fading');
+        setTimeout(function() {
+          introEl.classList.add('intro-hidden');
+        }, immediate ? 240 : 440);
+      };
+
+      if (hasWompiReturn || hasDeepHash || !canvas || !ctx) {
+        document.body.classList.remove('intro-playing');
+        if (introEl) introEl.classList.add('intro-hidden');
+        dismissed = true;
+        return;
+      }
+
+      var TOTAL_FRAMES = 60;
+      var DURATION_MS = prefersReduced ? 360 : 2450;
+      var frames = new Array(TOTAL_FRAMES);
+      var loadedCount = 0;
+
+      function frameUrl(idx) {
+        var n = String(idx + 1).padStart(3, '0');
+        return './assets/intro-frames/frame-' + n + '.webp';
+      }
+
+      function sizeCanvas() {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.floor(window.innerWidth * dpr));
+        canvas.height = Math.max(1, Math.floor(window.innerHeight * dpr));
+      }
+      sizeCanvas();
+      window.addEventListener('resize', sizeCanvas);
+
+      // Proportional draw: uses contain-aware framing on narrow mobile so side-emerging letters NEVER clip
+      function drawFrameImage(img) {
+        if (!img || !img.complete || img.naturalWidth <= 0) return;
+        var cw = canvas.width, ch = canvas.height;
+        var iw = img.naturalWidth, ih = img.naturalHeight;
+        var isPortrait = ch > cw;
+        var scale = isPortrait
+          ? Math.min(cw / (iw * 0.82), ch / ih)
+          : Math.max(cw / iw, ch / ih);
+        var dw = iw * scale;
+        var dh = ih * scale;
+        var dx = (cw - dw) * 0.5;
+        var dy = (ch - dh) * 0.5;
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, cw, ch);
+        ctx.drawImage(img, dx, dy, dw, dh);
+      }
+
+      function findNearestLoadedFrame(targetIdx) {
+        if (frames[targetIdx] && frames[targetIdx].complete && frames[targetIdx].naturalWidth > 0) {
+          return frames[targetIdx];
+        }
+        for (var offset = 1; offset < TOTAL_FRAMES; offset++) {
+          var prev = targetIdx - offset;
+          if (prev >= 0 && frames[prev] && frames[prev].complete && frames[prev].naturalWidth > 0) return frames[prev];
+          var next = targetIdx + offset;
+          if (next < TOTAL_FRAMES && frames[next] && frames[next].complete && frames[next].naturalWidth > 0) return frames[next];
+        }
+        return null;
+      }
+
+      function loadSingleFrame(idx, onReady) {
+        if (frames[idx]) return;
+        var img = new Image();
+        img.decoding = 'async';
+        img.onload = function() {
+          loadedCount++;
+          if (onReady) onReady(img);
+        };
+        img.src = frameUrl(idx);
+        frames[idx] = img;
+      }
+
+      // 2-Pass Progressive Preload (Casa a Sotavento pattern)
+      // Pass 1: Frame 0 immediate paint + keyframes every 6 steps
+      var keyIndices = [];
+      for (var k = 0; k < TOTAL_FRAMES; k += 6) keyIndices.push(k);
+      if (keyIndices[keyIndices.length - 1] !== TOTAL_FRAMES - 1) keyIndices.push(TOTAL_FRAMES - 1);
+
+      var playbackStarted = false;
+      function startPlayback() {
+        if (playbackStarted || dismissed) return;
+        playbackStarted = true;
+        if (prefersReduced) {
+          var lastImg = findNearestLoadedFrame(TOTAL_FRAMES - 1) || findNearestLoadedFrame(0);
+          if (lastImg) drawFrameImage(lastImg);
+          setTimeout(function() { window.dismissBrainIntro(false); }, DURATION_MS);
+          return;
+        }
+        var startTs = performance.now();
+        function tick(now) {
+          if (dismissed) return;
+          var progress = Math.min(1, (now - startTs) / DURATION_MS);
+          var idx = Math.min(TOTAL_FRAMES - 1, Math.floor(progress * (TOTAL_FRAMES - 1)));
+          var img = findNearestLoadedFrame(idx);
+          if (img) drawFrameImage(img);
+          if (progress >= 1) {
+            setTimeout(function() { window.dismissBrainIntro(false); }, 110);
+            return;
+          }
+          rafId = requestAnimationFrame(tick);
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      // Paint Frame 0 immediately, then kick off keyframes + Pass 2 in background
+      loadSingleFrame(0, function(img0) {
+        if (!dismissed) drawFrameImage(img0);
+        keyIndices.forEach(function(idx) { loadSingleFrame(idx); });
+        // Pass 2: load remaining intermediate frames
+        for (var i = 1; i < TOTAL_FRAMES; i++) {
+          if (!frames[i]) loadSingleFrame(i);
+        }
+        setTimeout(startPlayback, 120);
+      });
+
+      // Safety fallback if frame 0 is slow
+      setTimeout(function() {
+        if (!playbackStarted && !dismissed) startPlayback();
+      }, 450);
+
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !dismissed) {
+          window.dismissBrainIntro(true);
+        }
+      });
+    })();
+  </script>
 
   <!-- ABSOLUTE TOUCH & SCROLL SHIELD FOR DETECTIVES -->
   <div id="detectiveShield" title="Pantalla bloqueada en Modo Espejo por Sherlock"></div>
@@ -502,7 +738,7 @@
     <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=1280&auto=format&fit=crop" class="bg-cover-image" alt="Noir city">
     <div class="bg-overlay"></div>
     
-    <div class="relative z-10 glass-panel p-6 sm:p-12 rounded-3xl border-neon-pink shadow-[0_0_40px_rgba(255,0,85,0.2)] max-w-3xl w-full">
+    <div id="heroCard" class="relative z-10 glass-panel p-6 sm:p-12 rounded-3xl border-neon-pink shadow-[0_0_40px_rgba(255,0,85,0.2)] max-w-3xl w-full">
       <span class="inline-block px-4 py-1 rounded-full bg-neon-pink/20 text-neon-pink text-xs sm:text-sm font-bold tracking-widest border border-neon-pink/40 mb-4 sm:mb-6">
         BIENVENIDOS <span class="text-white">DETECTIVES</span>
       </span>
@@ -514,18 +750,18 @@
       <p class="text-neon-cyan font-bold tracking-widest text-xs sm:text-sm mb-6 uppercase">MISTERIOS DE PENSAMIENTO LATERAL</p>
       
       <div class="flex flex-wrap justify-center gap-2.5 sm:gap-4 mb-8">
-        <button type="button" onclick="event.preventDefault(); openModal('modalWhatIs');" class="text-xs font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20 whitelist-control cursor-pointer">
+        <button type="button" onclick="event.preventDefault(); openModal('modalWhatIs');" class="hero-pressable text-xs font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full border border-white/20 whitelist-control cursor-pointer">
           ¿QUÉ ES UNA BS?
         </button>
-        <button type="button" onclick="event.preventDefault(); openModal('modalRules');" class="text-xs font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-colors border border-white/20 whitelist-control cursor-pointer">
+        <button type="button" onclick="event.preventDefault(); openModal('modalRules');" class="hero-pressable text-xs font-bold bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full border border-white/20 whitelist-control cursor-pointer">
           ¿CÓMO SE JUEGA?
         </button>
-        <button type="button" onclick="event.preventDefault(); openModal('modalPurpose');" class="text-xs font-bold bg-neon-cyan/20 hover:bg-neon-cyan hover:text-black text-neon-cyan px-4 py-2 rounded-full transition-colors border border-neon-cyan/40 whitelist-control cursor-pointer">
+        <button type="button" onclick="event.preventDefault(); openModal('modalPurpose');" class="hero-pressable text-xs font-bold bg-neon-cyan/20 hover:bg-neon-cyan hover:text-black text-neon-cyan px-4 py-2 rounded-full border border-neon-cyan/40 whitelist-control cursor-pointer">
           <i class="fa-solid fa-map-location-dot mr-1"></i> ¿DÓNDE JUGARLO?
         </button>
       </div>
 
-      <a href="#slide2" class="inline-block bg-neon-pink hover:bg-pink-600 text-white font-title text-xl sm:text-2xl tracking-widest px-8 py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(255,0,85,0.5)]">
+      <a href="#slide2" class="hero-pressable inline-block bg-neon-pink hover:bg-pink-600 text-white font-title text-xl sm:text-2xl tracking-widest px-8 py-3.5 rounded-xl shadow-[0_0_20px_rgba(255,0,85,0.5)]">
         ABRIR EXPEDIENTES <i class="fa-solid fa-arrow-right ml-2"></i>
       </a>
     </div>
