@@ -1,4 +1,4 @@
-const CACHE_NAME = 'blackstories-pwa-v8';
+const CACHE_NAME = 'blackstories-pwa-v10';
 
 const PRECACHE_URLS = [
   './',
