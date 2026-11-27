@@ -1,4 +1,4 @@
-const CACHE_NAME = 'blackstories-pwa-v10';
+const CACHE_NAME = 'blackstories-pwa-v11';
 
 const PRECACHE_URLS = [
   './',
@@ -10,7 +10,7 @@ const PRECACHE_URLS = [
   './icons/apple-touch-icon.png',
   './icons/favicon-32.png',
   './assets/intro-frames/frame-001.webp',
-  './assets/intro-frames/frame-060.webp',
+  './assets/intro-frames/frame-090.webp',
   './assets/tutorial/scene1-hook.jpg',
   './assets/tutorial/scene2-modes.jpg',
   './assets/tutorial/scene3-bar.jpg',
